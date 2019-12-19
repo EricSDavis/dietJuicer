@@ -1,0 +1,15 @@
+
+## Location of Sample-sheet and read paths
+samples: 
+  'samples.txt'
+
+prefix:
+    'LEUK_'
+
+## Genome-specific reference parameters
+
+
+## Rule-specific parameters
+params:
+  rule:
+    option:

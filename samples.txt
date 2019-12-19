@@ -1,0 +1,4 @@
+Read1	Read2
+reads/asdfaasd_R1.txt	reads/asdfaasd_R2.txt
+reads/wejofinv_R1.txt	reads/wejofinv_R2.txt
+reads/xbinwei_R1.txt	reads/xbinwei_R2.txt

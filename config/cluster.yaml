@@ -1,0 +1,6 @@
+__default__:
+  partition: general
+  tasks: 8
+  nodes: 1
+  mem: 30G
+  time: 02:00:00
