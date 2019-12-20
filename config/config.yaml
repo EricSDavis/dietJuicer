@@ -4,12 +4,12 @@ samples:
   'samples.txt'
 
 prefix:
-    'LEUK_'
+  'CI_THP1_A_1.1.1'
 
 ## Genome-specific reference parameters
 
 
 ## Rule-specific parameters
-params:
-  rule:
-    option:
+countLigations:
+  ligation:
+    "GATCGATC"

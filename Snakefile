@@ -18,16 +18,18 @@ onsuccess:
 ##### Define rules #####
 rule all:
 	input:
-		expand('output/{prefix}makeFile_split{sample}_R{pair}.txt', sample=list(samples.index), pair=[1,2], prefix=config["prefix"])
+		expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=samples.index),
+		expand('output/{prefix}_countLigations_split{sample}_linecount.txt', prefix=config["prefix"], sample=samples.index)
 
-rule makeFiles:
+rule countLigations:
 	input:
-		in1 = lambda wildcards: samples["Read1"],
-		in2 = lambda wildcards: samples["Read2"]
+		R1 = lambda wildcards: samples.iloc[[int(i) for i in wildcards.sample]]["Read1"],
+		R2 = lambda wildcards: samples.iloc[[int(i) for i in wildcards.sample]]["Read2"]
 	output:
-		out1 = 'output/{prefix}makeFile_split{sample}_R1.txt',
-		out2 = 'output/{prefix}makeFile_split{sample}_R2.txt'
-	message: "Launching makeFiles job"
-	shadow: "full"
-	shell:
-		'touch {output.out1} {output.out2};'
+		temp = temp('output/{prefix}_countLigations_split{sample}_temp'),
+		res = 'output/{prefix}_countLigations_split{sample}_norm.txt.res.txt',
+		linecount = 'output/{prefix}_countLigations_split{sample}_linecount.txt'
+	params:
+		ligation = config['countLigations']['ligation']
+	run:
+		shell("R1={input.R1} R2={input.R2} ligation={params.ligation} temp={output.temp} res={output.res} linecount={output.linecount} ./scripts/countLigations.sh")
