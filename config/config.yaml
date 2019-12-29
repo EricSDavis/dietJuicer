@@ -7,9 +7,18 @@ prefix:
   'CI_THP1_A_1.1.1'
 
 ## Genome-specific reference parameters
+fasta:
+  '/Users/eric/Phanstiel\ Lab\ Dropbox/Eric\ Davis/genomes/hg19/bwa/hg19.fa' #'/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa'
 
+site:
+  "MboI" #or 'none'
+
+site_file:
+  'restriction_sites/hg19_MboI.txt'
 
 ## Rule-specific parameters
 countLigations:
-  ligation:
-    "GATCGATC"
+  ligation: "GATCGATC"
+
+chimera:
+  mapq0_reads_included: 1

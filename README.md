@@ -54,3 +54,7 @@ Final Result:
 		echo "$num2" > {output.linecount};
 		"""
 ```
+
+```
+awk '{printf("%s %s %s %d %s %s %s %d", $1, $2, $3, 0, $4, $5, $6, 1); for (i=7; i<=NF; i++) {printf(" %s",$i);}printf("\n");}' output/CI_THP1_A_1.1.1_chimera_split1_norm.txt > output/CI_THP1_A_1.1.1_fragment_split1.frag.txt
+```

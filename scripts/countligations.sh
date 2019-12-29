@@ -33,3 +33,9 @@ num2=$(gunzip -c $R1 | wc -l | awk '{{print $1}}');
 
 echo -ne "$num1 " > $res;
 echo "$num2" > $linecount;
+
+# num1=$(paste <(gunzip -c $R1) <(gunzip -c $R2) | grep -cE $ligation)
+# num2=$(gunzip -c $R1 | wc -l | awk '{{print $1}}')
+
+# echo -ne "$num1 " > $res;
+# echo "$num2" > $linecount;
