@@ -23,7 +23,8 @@ rule all:
 		fragmentOutAll = expand("output/{prefix}_fragment_split{sample}.frag.txt", prefix=config["prefix"], sample=samples.index),
 		sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired']),
 		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index),
-		mergeOutAll = expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0'])
+		mergeOutAll = expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0']),
+		mergedSortOutAll = expand('output/{prefix}_mergedSort_merged_sort.txt', prefix=config["prefix"])
 
 rule countLigations:
 	input:
@@ -122,3 +123,13 @@ rule merge:
 	threads: 10
 	run:
 		shell('samtools merge -n {output} {input} 2> {log.err}')
+
+rule mergedSort:
+	input:
+		expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index)
+	output:
+		'output/{prefix}_mergedSort_merged_sort.txt'
+	threads: 10
+	shadow: "minimal"
+	run:
+		shell('sort -m -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output}')
