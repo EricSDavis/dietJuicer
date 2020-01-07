@@ -22,7 +22,8 @@ rule all:
 		handleChimerasOutAll = expand('output/{prefix}_align_split{sample}{extension}', prefix=config["prefix"], sample=samples.index, extension=['_norm.txt', '_alignable.sam', '_collisions.sam', '_collisions_low_mapq.sam', '_unmapped.sam', '_mapq0.sam', '_unpaired.sam']),
 		fragmentOutAll = expand("output/{prefix}_fragment_split{sample}.frag.txt", prefix=config["prefix"], sample=samples.index),
 		sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired']),
-		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index)
+		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index),
+		mergeOutAll = expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0'])
 
 rule countLigations:
 	input:
@@ -110,3 +111,14 @@ rule sort:
 	shadow: "minimal"
 	run:
 		shell('sort -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted}')
+
+rule merge:
+	input:
+		lambda wildcards: expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=wildcards.extension)
+	output:
+		'output/{prefix}_merge_{extension}.bam'
+	log:
+		err = "output/logs/{prefix}_merge_{extension}.err"
+	threads: 10
+	run:
+		shell('samtools merge -n {output} {input} 2> {log.err}')
