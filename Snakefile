@@ -21,7 +21,8 @@ rule all:
 		alignOut1 = expand('output/{prefix}_align_split{sample}.sam', prefix=config["prefix"], sample=samples.index),
 		handleChimerasOutAll = expand('output/{prefix}_align_split{sample}{extension}', prefix=config["prefix"], sample=samples.index, extension=['_norm.txt', '_alignable.sam', '_collisions.sam', '_collisions_low_mapq.sam', '_unmapped.sam', '_mapq0.sam', '_unpaired.sam']),
 		fragmentOutAll = expand("output/{prefix}_fragment_split{sample}.frag.txt", prefix=config["prefix"], sample=samples.index),
-		sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired'])
+		sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired']),
+		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index)
 
 rule countLigations:
 	input:
@@ -100,5 +101,12 @@ rule sam2bam:
 	run:
 		shell('samtools view -hb {input} > {output}')
 
-
-	
+rule sort:
+	input:
+		rules.fragment.output.frag
+	output:
+		sorted = "output/{prefix}_sort_split{sample}.sort.txt"
+	threads: 10
+	shadow: "minimal"
+	run:
+		shell('sort -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted}')
