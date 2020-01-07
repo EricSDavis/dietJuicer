@@ -21,4 +21,4 @@ countLigations:
   ligation: "GATCGATC"
 
 chimera:
-  mapq0_reads_included: 1
+  mapq0_reads_included: 0
