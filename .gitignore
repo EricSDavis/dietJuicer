@@ -6,3 +6,5 @@ template/
 .snakemake/
 
 output/
+
+personalNotes.md

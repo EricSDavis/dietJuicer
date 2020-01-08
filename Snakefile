@@ -30,6 +30,7 @@ rule all:
 		dedupAlignablePart2 = expand('output/{prefix}_align_split{sample}_{extension}', prefix=config["prefix"], sample=samples.index, extension=['alignable_dedup.sam', 'alignable.bam']),
 		dedupAlignablePart3 = expand('output/{prefix}_dedupAlignablePart3_alignable.bam', prefix=config["prefix"])
 
+## COUNT LIGATIONS, ALIGN FASTQ, HANDLE CHIMERIC READS, SORT BY READNAME
 rule countLigations:
 	input:
 		R1 = lambda wildcards: samples.iloc[[int(i) for i in wildcards.sample]]["Read1"],
@@ -117,6 +118,7 @@ rule sort:
 	run:
 		shell('sort -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted}')
 
+## MERGE SORTED AND ALIGNED FILES
 rule merge:
 	input:
 		lambda wildcards: expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=wildcards.extension)
@@ -138,6 +140,7 @@ rule mergedSort:
 	run:
 		shell('sort -m -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output}')
 
+## REMOVE DUPLICATES
 rule dedup:
 	input:
 		rules.mergedSort.output
@@ -186,3 +189,5 @@ rule dedupAlignablePart3:
 	threads: 10
 	run:
 		shell('samtools merge -n {output} {input} 2> {log.err}')
+
+## CREATE HIC FILES
