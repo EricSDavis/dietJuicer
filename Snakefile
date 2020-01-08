@@ -24,7 +24,11 @@ rule all:
 		sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired']),
 		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index),
 		mergeOutAll = expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0']),
-		mergedSortOutAll = expand('output/{prefix}_mergedSort_merged_sort.txt', prefix=config["prefix"])
+		mergedSortOutAll = expand('output/{prefix}_mergedSort_merged_sort.txt', prefix=config["prefix"]),
+		dedupOutAll = expand('output/{prefix}_{extension}.txt', prefix=config["prefix"], extension=['dups', 'merged_nodups', 'opt_dups']),
+		dedupAlignablePart1 = expand('output/{prefix}_align_split{sample}_dedup', prefix=config["prefix"], sample=samples.index),
+		dedupAlignablePart2 = expand('output/{prefix}_align_split{sample}_{extension}', prefix=config["prefix"], sample=samples.index, extension=['alignable_dedup.sam', 'alignable.bam']),
+		dedupAlignablePart3 = expand('output/{prefix}_dedupAlignablePart3_alignable.bam', prefix=config["prefix"])
 
 rule countLigations:
 	input:
@@ -133,3 +137,52 @@ rule mergedSort:
 	shadow: "minimal"
 	run:
 		shell('sort -m -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output}')
+
+rule dedup:
+	input:
+		rules.mergedSort.output
+	output:
+		dups = "output/{prefix}_dups.txt",
+		merged_nodups = "output/{prefix}_merged_nodups.txt",
+		optdups = "output/{prefix}_opt_dups.txt"
+	params:
+		name = 'output/{prefix}_'
+	threads: 10
+	run:
+		shell('touch {output}'),
+		shell('awk -f ./scripts/dups.awk -v name={params.name} {input}')
+
+rule dedupAlignablePart1:
+	input:
+		rules.dedup.output.merged_nodups
+	output:
+		'output/{prefix}_align_split{sample}_dedup' ## Make temporary
+	threads: 10
+	shell:
+		"""
+		awk '{{split($(NF-1), a, "$"); split($NF, b, "$"); print a[3],b[3] > a[2]"_dedup"}}' {input}
+		"""
+rule dedupAlignablePart2:
+	input:
+		dedup = rules.dedupAlignablePart1.output,
+		alignable = rules.chimera.output.alignable
+	output:
+		dedup_sam = 'output/{prefix}_align_split{sample}_alignable_dedup.sam',
+		bam = 'output/{prefix}_align_split{sample}_alignable.bam'
+	threads: 10
+	shell:
+		"""
+		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam}
+		samtools view -hb {input.alignable} > {output.bam}
+		"""
+
+rule dedupAlignablePart3:
+	input:
+		lambda wildcards: expand('output/{prefix}_align_split{sample}_alignable.bam', prefix=config["prefix"], sample=samples.index)
+	output:
+		'output/{prefix}_dedupAlignablePart3_alignable.bam'
+	log:
+		err = "output/logs/{prefix}_dedupAlignablePart3_alignable.err"
+	threads: 10
+	run:
+		shell('samtools merge -n {output} {input} 2> {log.err}')
