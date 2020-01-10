@@ -60,9 +60,9 @@ BEGIN {
 	}
 	# names of output files
 	# the variable "name" can be set via the -v flag
-	dupname=name"dups.txt";
-	nodupname=name"merged_nodups.txt";
-	optname=name"opt_dups.txt"; #changed optdups.txt to opt_dups.txt
+	dupname=name"dedup_dups.txt";
+	nodupname=name"dedup_merged_nodups.txt";
+	optname=name"dedup_opt_dups.txt"; #changed optdups.txt to opt_dups.txt
 }
 # strand, chromosome, fragment match previous; first position (sorted) within wobble1
 

@@ -25,10 +25,11 @@ rule all:
 		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index),
 		mergeOutAll = expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0']),
 		mergedSortOutAll = expand('output/{prefix}_mergedSort_merged_sort.txt', prefix=config["prefix"]),
-		dedupOutAll = expand('output/{prefix}_{extension}.txt', prefix=config["prefix"], extension=['dups', 'merged_nodups', 'opt_dups']),
+		dedupOutAll = expand('output/{prefix}_dedup_{extension}.txt', prefix=config["prefix"], extension=['dups', 'merged_nodups', 'opt_dups']),
 		dedupAlignablePart1 = expand('output/{prefix}_align_split{sample}_dedup', prefix=config["prefix"], sample=samples.index),
 		dedupAlignablePart2 = expand('output/{prefix}_align_split{sample}_{extension}', prefix=config["prefix"], sample=samples.index, extension=['alignable_dedup.sam', 'alignable.bam']),
-		dedupAlignablePart3 = expand('output/{prefix}_dedupAlignablePart3_alignable.bam', prefix=config["prefix"])
+		dedupAlignablePart3 = expand('output/{prefix}_dedupAlignablePart3_alignable.bam', prefix=config["prefix"]),
+		statsOutAll = expand('output/{prefix}_dupStats_stats_dups{extension}', prefix=config["prefix"], extension=['.txt', '_hists.m'])
 
 ## COUNT LIGATIONS, ALIGN FASTQ, HANDLE CHIMERIC READS, SORT BY READNAME
 rule countLigations:
@@ -145,9 +146,9 @@ rule dedup:
 	input:
 		rules.mergedSort.output
 	output:
-		dups = "output/{prefix}_dups.txt",
-		merged_nodups = "output/{prefix}_merged_nodups.txt",
-		optdups = "output/{prefix}_opt_dups.txt"
+		dups = "output/{prefix}_dedup_dups.txt",
+		merged_nodups = "output/{prefix}_dedup_merged_nodups.txt",
+		optdups = "output/{prefix}_dedup_opt_dups.txt"
 	params:
 		name = 'output/{prefix}_'
 	threads: 10
@@ -190,4 +191,16 @@ rule dedupAlignablePart3:
 	run:
 		shell('samtools merge -n {output} {input} 2> {log.err}')
 
-## CREATE HIC FILES
+## STATISTICS
+rule dupStats:
+	input:
+		rules.dedup.output.dups
+	output:
+		stats_dups = 'output/{prefix}_dupStats_stats_dups.txt',
+		hists = 'output/{prefix}_dupStats_stats_dups_hists.m'
+	params:
+		site = config['site'],
+		site_file = config['site_file']
+	threads: 10
+	run:
+		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input}')
