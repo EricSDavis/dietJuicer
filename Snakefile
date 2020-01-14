@@ -16,20 +16,22 @@ onsuccess:
 ##### Define rules #####
 rule all:
 	input:
-		countLigationsOut1 = expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=samples.index),
-		countLigationsOut2 = expand('output/{prefix}_countLigations_split{sample}_linecount.txt', prefix=config["prefix"], sample=samples.index),
-		alignOut1 = expand('output/{prefix}_align_split{sample}.sam', prefix=config["prefix"], sample=samples.index),
-		handleChimerasOutAll = expand('output/{prefix}_align_split{sample}{extension}', prefix=config["prefix"], sample=samples.index, extension=['_norm.txt', '_alignable.sam', '_collisions.sam', '_collisions_low_mapq.sam', '_unmapped.sam', '_mapq0.sam', '_unpaired.sam']),
-		fragmentOutAll = expand("output/{prefix}_fragment_split{sample}.frag.txt", prefix=config["prefix"], sample=samples.index),
-		sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired']),
-		sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index),
+		# countLigationsOut1 = expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=samples.index),
+		# countLigationsOut2 = expand('output/{prefix}_countLigations_split{sample}_linecount.txt', prefix=config["prefix"], sample=samples.index),
+		# alignOut1 = expand('output/{prefix}_align_split{sample}.sam', prefix=config["prefix"], sample=samples.index),
+		# handleChimerasOutAll = expand('output/{prefix}_align_split{sample}_{extension}', prefix=config["prefix"], sample=samples.index, extension=['norm.txt', 'alignable.sam', 'collisions.sam', 'collisions_low_mapq.sam', 'unmapped.sam', 'mapq0.sam', 'unpaired.sam']),
+		# fragmentOutAll = expand("output/{prefix}_fragment_split{sample}.frag.txt", prefix=config["prefix"], sample=samples.index),
+		# sam2bamOutAll = expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=samples.index, extension=['alignable', 'collisions', 'collisions_low_mapq', 'unmapped', 'mapq0', 'unpaired']),
+		# sortOutAll = expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index),
 		mergeOutAll = expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0']),
-		mergedSortOutAll = expand('output/{prefix}_mergedSort_merged_sort.txt', prefix=config["prefix"]),
-		dedupOutAll = expand('output/{prefix}_dedup_{extension}.txt', prefix=config["prefix"], extension=['dups', 'merged_nodups', 'opt_dups']),
-		dedupAlignablePart1 = expand('output/{prefix}_align_split{sample}_dedup', prefix=config["prefix"], sample=samples.index),
-		dedupAlignablePart2 = expand('output/{prefix}_align_split{sample}_{extension}', prefix=config["prefix"], sample=samples.index, extension=['alignable_dedup.sam', 'alignable.bam']),
+		# mergedSortOutAll = expand('output/{prefix}_mergedSort_merged_sort.txt', prefix=config["prefix"]),
+		# dedupOutAll = expand('output/{prefix}_dedup_{extension}.txt', prefix=config["prefix"], extension=['dups', 'merged_nodups', 'opt_dups']),
+		# dedupAlignablePart1 = expand('output/{prefix}_align_split{sample}_dedup', prefix=config["prefix"], sample=samples.index),
+		# dedupAlignablePart2 = expand('output/{prefix}_align_split{sample}_{extension}', prefix=config["prefix"], sample=samples.index, extension=['alignable_dedup.sam', 'alignable.bam']),
 		dedupAlignablePart3 = expand('output/{prefix}_dedupAlignablePart3_alignable.bam', prefix=config["prefix"]),
-		statsOutAll = expand('output/{prefix}_dupStats_stats_dups{extension}', prefix=config["prefix"], extension=['.txt', '_hists.m'])
+		statsOutAll = expand('output/{prefix}_dupStats_stats_dups{extension}', prefix=config["prefix"], extension=['.txt', '_hists.m']),
+		interOutAll = expand('output/{prefix}_inter.txt', prefix=config["prefix"]),
+		inter30OutAll = expand('output/{prefix}_inter_30.txt', prefix=config["prefix"])
 
 ## COUNT LIGATIONS, ALIGN FASTQ, HANDLE CHIMERIC READS, SORT BY READNAME
 rule countLigations:
@@ -204,3 +206,37 @@ rule dupStats:
 	threads: 10
 	run:
 		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input}')
+
+rule inter:
+	input:
+		res = expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=samples.index),
+		merged_nodups = rules.dedup.output.merged_nodups
+	output:
+		'output/{prefix}_inter.txt'
+	params:
+		site = config['site'],
+		site_file = config['site_file']
+	threads: 10
+	shell:
+		"""
+		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output}
+		./scripts/juicer_tools LibraryComplexity output {output} >> {output}
+		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 1 {input.merged_nodups}
+		"""
+
+rule inter30:
+	input:
+		res = expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=samples.index),
+		merged_nodups = rules.dedup.output.merged_nodups
+	output:
+		'output/{prefix}_inter_30.txt'
+	params:
+		site = config['site'],
+		site_file = config['site_file']
+	threads: 10
+	shell:
+		"""
+		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output}
+		./scripts/juicer_tools LibraryComplexity output {output} >> {output}
+		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 30 {input.merged_nodups}
+		"""
