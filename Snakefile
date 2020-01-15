@@ -47,22 +47,27 @@ rule countLigations:
 		out = "output/logs/{prefix}_countLigations_split{sample}.out"
 	params:
 		ligation = config['countLigations']['ligation']
+	benchmark: 
+		'output/benchmarks/{prefix}_countLigations_split{sample}.tsv'
 	run:
-		shell("R1={input.R1} R2={input.R2} ligation={params.ligation} temp={output.temp} res={output.res} linecount={output.linecount} ./scripts/countLigations.sh 2> {log.err} 1> {log.out}")
-		# shell("R1={input.R1} R2={input.R2} ligation={params.ligation} res={output.res} linecount={output.linecount} ./scripts/countLigations.sh 2> {log.err} 1> {log.out}")
+		shell("R1={input.R1} R2={input.R2} ligation={params.ligation} temp={output.temp} res={output.res} linecount={output.linecount} sh scripts/countLigations.sh 2> {log.err} 1> {log.out}")
+		# shell("R1={input.R1} R2={input.R2} ligation={params.ligation} res={output.res} linecount={output.linecount} sh scripts/countLigations.sh 2> {log.err} 1> {log.out}")
 
 rule align:
 	input:
 		R1 = lambda wildcards: samples.iloc[[int(i) for i in wildcards.sample]]["Read1"],
 		R2 = lambda wildcards: samples.iloc[[int(i) for i in wildcards.sample]]["Read2"]
 	output:
-		sam = "output/{prefix}_align_split{sample}.sam" ## Make temporary
+		sam = temp("output/{prefix}_align_split{sample}.sam") ## Make temporary
 	log:
 		err = "output/logs/{prefix}_align_split{sample}.err"
-	threads: 10
+	threads: 4#10
 	params:
 		fasta = config['fasta']
+	benchmark: 
+		"output/benchmarks/{prefix}_align_split{sample}.tsv"
 	run:
+		shell("module load bwa"),
 		shell("bwa mem -SP5M -t {threads} {params.fasta} {input.R1} {input.R2} > {output.sam} 2> {log.err}")
 
 rule chimera:
@@ -70,16 +75,18 @@ rule chimera:
 		sam = rules.align.output.sam
 	output:
 		norm = "output/{prefix}_align_split{sample}_norm.txt",
-		alignable = "output/{prefix}_align_split{sample}_alignable.sam", ## Make temporary
-		collisions = "output/{prefix}_align_split{sample}_collisions.sam", ## Make temporary
-		lowqcollisions = "output/{prefix}_align_split{sample}_collisions_low_mapq.sam", ## Make temporary
-		unmapped = "output/{prefix}_align_split{sample}_unmapped.sam", ## Make temporary
-		mapq0 = "output/{prefix}_align_split{sample}_mapq0.sam", ## Make temporary
-		unpaired = "output/{prefix}_align_split{sample}_unpaired.sam" ## Make temporary
-	threads: 10
+		alignable = temp("output/{prefix}_align_split{sample}_alignable.sam"), ## Make temporary
+		collisions = temp("output/{prefix}_align_split{sample}_collisions.sam"), ## Make temporary
+		lowqcollisions = temp("output/{prefix}_align_split{sample}_collisions_low_mapq.sam"), ## Make temporary
+		unmapped = temp("output/{prefix}_align_split{sample}_unmapped.sam"), ## Make temporary
+		mapq0 = temp("output/{prefix}_align_split{sample}_mapq0.sam"), ## Make temporary
+		unpaired = temp("output/{prefix}_align_split{sample}_unpaired.sam") ## Make temporary
+	threads: 1
 	params:
 		fname = 'output/{prefix}_align_split{sample}',
 		mapq0_reads_included = config['chimera']['mapq0_reads_included']
+	benchmark: 
+		'output/benchmarks/{prefix}_chimera_split{sample}.tsv'
 	run:
 		shell('touch {output}'),
 		shell('gawk -v "fname"={params.fname} -v "mapq0_reads_included"={params.mapq0_reads_included} -f ./scripts/chimeric_blacklist.awk {input.sam}')
@@ -89,10 +96,12 @@ rule fragment:
 		norm = rules.chimera.output.norm
 	output:
 		frag = "output/{prefix}_fragment_split{sample}.frag.txt",
-	threads: 10
+	threads: 1
 	params:
 		site = config['site'],
 		site_file = config['site_file']
+	benchmark:
+		'output/benchmarks/{prefix}_fragment_split{sample}.tsv'
 	shell: ## Use better error handling with the if/else statement for restriction site
 		"""
 		if [ {params.site} != "none" ]
@@ -108,7 +117,10 @@ rule sam2bam:
 		lambda wildcards: ['output/{prefix}_align_split{sample}_{extension}.sam'.format(prefix=wildcards.prefix, sample=wildcards.sample, extension=wildcards.extension)]
 	output:
 		'output/{prefix}_sam2bam_split{sample}_{extension}.bam'
+	benchmark:
+		'output/benchmarks/{prefix}_fragment_split{sample}_{extension}.tsv'
 	run:
+		shell('module load samtools'),
 		shell('samtools view -hb {input} > {output}')
 
 rule sort:
@@ -116,8 +128,10 @@ rule sort:
 		rules.fragment.output.frag
 	output:
 		sorted = "output/{prefix}_sort_split{sample}.sort.txt"
-	threads: 10
+	threads: 1
 	shadow: "minimal"
+	benchmark:
+		'output/benchmarks/{prefix}_sort_split{sample}.tsv'
 	run:
 		shell('sort -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted}')
 
@@ -129,8 +143,11 @@ rule merge:
 		'output/{prefix}_merge_{extension}.bam'
 	log:
 		err = "output/logs/{prefix}_merge_{extension}.err"
-	threads: 10
+	threads: 1#10
+	benchmark:
+		'output/benchmarks/{prefix}_merge_{extension}.tsv'
 	run:
+		shell('module load samtools'),
 		shell('samtools merge -n {output} {input} 2> {log.err}')
 
 rule mergedSort:
@@ -138,8 +155,10 @@ rule mergedSort:
 		expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=samples.index)
 	output:
 		'output/{prefix}_mergedSort_merged_sort.txt'
-	threads: 10
+	threads: 1#10
 	shadow: "minimal"
+	benchmark:
+		'output/benchmarks/{prefix}_mergedSort.tsv'
 	run:
 		shell('sort -m -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output}')
 
@@ -153,7 +172,9 @@ rule dedup:
 		optdups = "output/{prefix}_dedup_opt_dups.txt"
 	params:
 		name = 'output/{prefix}_'
-	threads: 10
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_dedup.tsv'
 	run:
 		shell('touch {output}'),
 		shell('awk -f ./scripts/dups.awk -v name={params.name} {input}')
@@ -162,8 +183,10 @@ rule dedupAlignablePart1:
 	input:
 		rules.dedup.output.merged_nodups
 	output:
-		'output/{prefix}_align_split{sample}_dedup' ## Make temporary
-	threads: 10
+		temp('output/{prefix}_align_split{sample}_dedup') ## Make temporary
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_dedupAlignablePart1_split{sample}.tsv'
 	shell:
 		"""
 		awk '{{split($(NF-1), a, "$"); split($NF, b, "$"); print a[3],b[3] > a[2]"_dedup"}}' {input}
@@ -175,9 +198,12 @@ rule dedupAlignablePart2:
 	output:
 		dedup_sam = 'output/{prefix}_align_split{sample}_alignable_dedup.sam',
 		bam = 'output/{prefix}_align_split{sample}_alignable.bam'
-	threads: 10
+	threads: 1#10
+	benchmark:
+		'output/benchmarks/{prefix}_dedupAlignablePart2_split{sample}.tsv'
 	shell:
 		"""
+		module load samtools
 		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam}
 		samtools view -hb {input.alignable} > {output.bam}
 		"""
@@ -189,8 +215,11 @@ rule dedupAlignablePart3:
 		'output/{prefix}_dedupAlignablePart3_alignable.bam'
 	log:
 		err = "output/logs/{prefix}_dedupAlignablePart3_alignable.err"
-	threads: 10
+	threads: 1#10
+	benchmark:
+		'output/benchmarks/{prefix}_dedupAlignablePart3.tsv'
 	run:
+		shell('module load samtools'),
 		shell('samtools merge -n {output} {input} 2> {log.err}')
 
 ## STATISTICS
@@ -203,7 +232,9 @@ rule dupStats:
 	params:
 		site = config['site'],
 		site_file = config['site_file']
-	threads: 10
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_dupStats.tsv'
 	run:
 		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input}')
 
@@ -216,7 +247,9 @@ rule inter:
 	params:
 		site = config['site'],
 		site_file = config['site_file']
-	threads: 10
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_inter.tsv'
 	shell:
 		"""
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output}
@@ -233,7 +266,9 @@ rule inter30:
 	params:
 		site = config['site'],
 		site_file = config['site_file']
-	threads: 10
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_inter30.tsv'
 	shell:
 		"""
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output}

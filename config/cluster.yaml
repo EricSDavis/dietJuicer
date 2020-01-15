@@ -1,20 +1,118 @@
 __default__:
+  name: "{rule}"
   partition: general
-  tasks: 1
+  tasks: "{threads}"
   nodes: 1
-  mem: 16G
+  mem: 2G #16G
   time: 24:00:00
+  output: "logs_slurm/{rule}.{wildcards}.out"
+  error: "logs_slurm/{rule}.{wildcards}.err"
 
+## COUNT LIGATIONS, ALIGN FASTQ, HANDLE CHIMERIC READS, SORT BY READNAME
 countLigations:
   partition: general
-  time: 24:00:00
-  tasks: 1
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
   nodes: 1
-  mem: 16G #5G
+  mem: 2G #16G #5G
 
 align:
   partition: general
-  time: 24:00:00
-  tasks: 8
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
   nodes: 1
-  mem: 16G
+  mem: 16G #16G
+
+chimera:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+fragment:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+sam2bam:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+sort:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+## MERGE SORTED AND ALIGNED FILES
+merge:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+mergedSort:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+## REMOVE DUPLICATES
+dedup:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+dedupAlignablePart1:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+dedupAlignablePart2:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+dedupAlignablePart3:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+## STATISTICS
+dupStats:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+inter:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G
+
+inter30:
+  partition: general
+  time: 00:10:00 #24:00:00
+  tasks: "{threads}"
+  nodes: 1
+  mem: 2G #16G

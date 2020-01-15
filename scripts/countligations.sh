@@ -26,8 +26,8 @@
 # Small helper script to count reads with ligation junction
 # Juicer version 1.5
 
-gzcat $R1 | grep -n $ligation | cut -f1 -d : > $temp;
-gzcat $R2 | grep -n $ligation | cut -f1 -d : >> $temp;
+gunzip -c $R1 | grep -n $ligation | cut -f1 -d : > $temp;
+gunzip -c $R2 | grep -n $ligation | cut -f1 -d : >> $temp;
 num1=$(sort $temp | uniq | wc -l | awk '{{print $1}}');
 num2=$(gunzip -c $R1 | wc -l | awk '{{print $1}}');
 
