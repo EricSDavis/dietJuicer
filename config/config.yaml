@@ -17,6 +17,9 @@ site_file:
   'restriction_sites/hg19_MboI.txt'
 
 ## Rule-specific parameters
+split:
+  splitsize: 2000000
+
 countLigations:
   ligation: "GATCGATC"
 

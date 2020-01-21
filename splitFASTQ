@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import pandas as pd
+import glob
+
+##### Load config and sample sheets #####
+
+configfile: "config/config.yaml"
+
+samples = pd.read_table(config["samples"])
+
+onsuccess:
+	print("splitFASTQ completed successfully!")
+
+##### Define rules #####
+rule all:
+	input:
+		"output/splitFASTQ_done.txt"
+
+checkpoint splitR1:
+	input:
+		lambda wildcards: samples.iloc[[int(i) for i in samples.index]]["Read1"]
+	output:
+		directory('output/splitsR1')
+	params:
+		splitsize = config['split']['splitsize']
+	run:
+		shell('mkdir -p {output}')
+		shell("gunzip -c {input} | gsplit -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='gzip > {output}/$FILE.gz'")
+
+checkpoint splitR2:
+	input:
+		lambda wildcards: samples.iloc[[int(i) for i in samples.index]]["Read2"]
+	output:
+		directory('output/splitsR2')
+	params:
+		splitsize = config['split']['splitsize']
+	run:
+		shell('mkdir -p {output}')
+		shell("gunzip -c {input} | gsplit -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='gzip > {output}/$FILE.gz'")
+
+def collectSplitsR1(wildcards):
+	checkpoint_output = checkpoints.splitR1.get(**wildcards).output[0]
+	return expand('output/splitsR1/{sampleR1}_R1.fastq.gz', sampleR1=glob_wildcards(os.path.join(checkpoint_output, '{sampleR1}_R1.fastq.gz')).sampleR1)
+
+def collectSplitsR2(wildcards):
+	checkpoint_output = checkpoints.splitR2.get(**wildcards).output[0]
+	return expand('output/splitsR2/{sampleR2}_R2.fastq.gz', sampleR2=glob_wildcards(os.path.join(checkpoint_output, '{sampleR2}_R2.fastq.gz')).sampleR2)
+
+rule collect:
+	input:
+		collectSplitsR1, 
+		collectSplitsR2
+	output:
+		'output/splitFASTQ_done.txt'
+	run:
+		shell('echo {input} > {output}')

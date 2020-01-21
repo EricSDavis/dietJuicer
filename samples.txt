@@ -1,3 +1,2 @@
 Read1	Read2
-reads/x000_R1.fastq.gz	reads/x000_R2.fastq.gz
-reads/x001_R1.fastq.gz	reads/x001_R2.fastq.gz
+reads/sample1_R1.fastq.gz	reads/sample1_R2.fastq.gz
