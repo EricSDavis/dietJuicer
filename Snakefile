@@ -61,13 +61,13 @@ rule align:
 		sam = temp("output/{prefix}_align_split{sample}.sam") ## Make temporary
 	log:
 		err = "output/logs/{prefix}_align_split{sample}.err"
-	threads: 4#10
+	threads: 10 #4
 	params:
 		fasta = config['fasta']
 	benchmark: 
 		"output/benchmarks/{prefix}_align_split{sample}.tsv"
 	run:
-		shell("module load bwa"),
+		# shell("module load bwa"),
 		shell("bwa mem -SP5M -t {threads} {params.fasta} {input.R1} {input.R2} > {output.sam} 2> {log.err}")
 
 rule chimera:
@@ -120,7 +120,7 @@ rule sam2bam:
 	benchmark:
 		'output/benchmarks/{prefix}_fragment_split{sample}_{extension}.tsv'
 	run:
-		shell('module load samtools'),
+		# shell('module load samtools'),
 		shell('samtools view -hb {input} > {output}')
 
 rule sort:
@@ -147,7 +147,7 @@ rule merge:
 	benchmark:
 		'output/benchmarks/{prefix}_merge_{extension}.tsv'
 	run:
-		shell('module load samtools'),
+		# shell('module load samtools'),
 		shell('samtools merge -n {output} {input} 2> {log.err}')
 
 rule mergedSort:
@@ -203,7 +203,7 @@ rule dedupAlignablePart2:
 		'output/benchmarks/{prefix}_dedupAlignablePart2_split{sample}.tsv'
 	shell:
 		"""
-		module load samtools
+		# module load samtools
 		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam}
 		samtools view -hb {input.alignable} > {output.bam}
 		"""
@@ -219,7 +219,7 @@ rule dedupAlignablePart3:
 	benchmark:
 		'output/benchmarks/{prefix}_dedupAlignablePart3.tsv'
 	run:
-		shell('module load samtools'),
+		# shell('module load samtools'),
 		shell('samtools merge -n {output} {input} 2> {log.err}')
 
 ## STATISTICS
