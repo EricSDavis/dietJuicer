@@ -12,12 +12,12 @@ Like `juicer`, but without all those calories
 
     For running locally use -b dietJuicerLocal
     ```bash
-    git clone -b dietJuicerLocal https://github.com/EricSDavis/dietJuicer.git
+    git clone -b dietJuicerLocal https://github.com/EricSDavis/dietJuicer.git .
     ```   
 
     For running on an HPC use -b dietJuicerCluster
     ```bash
-    git clone -b dietJuicerCluster https://github.com/EricSDavis/dietJuicer.git
+    git clone -b dietJuicerCluster https://github.com/EricSDavis/dietJuicer.git .
     ```
 
 2. Edit `samples.txt` to reflect your sample information
