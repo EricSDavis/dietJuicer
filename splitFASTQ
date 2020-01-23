@@ -25,9 +25,11 @@ checkpoint splitR1:
 		directory('output/splitsR1')
 	params:
 		splitsize = config['split']['splitsize']
-	run:
-		shell('mkdir -p {output}')
-		shell("gunzip -c {input} | gsplit -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='gzip > {output}/$FILE.gz'")
+	shell:
+		"""
+		mkdir -p {output};
+		gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='gzip > {output}/$FILE.gz';
+		"""
 
 checkpoint splitR2:
 	input:
@@ -36,9 +38,11 @@ checkpoint splitR2:
 		directory('output/splitsR2')
 	params:
 		splitsize = config['split']['splitsize']
-	run:
-		shell('mkdir -p {output}')
-		shell("gunzip -c {input} | gsplit -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='gzip > {output}/$FILE.gz'")
+	shell:
+		"""
+		mkdir -p {output};
+		gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='gzip > {output}/$FILE.gz';
+		"""
 
 def collectSplitsR1(wildcards):
 	checkpoint_output = checkpoints.splitR1.get(**wildcards).output[0]
@@ -54,5 +58,5 @@ rule collect:
 		collectSplitsR2
 	output:
 		'output/splitFASTQ_done.txt'
-	run:
-		shell('echo {input} > {output}')
+	shell:
+		'echo {input} > {output}'

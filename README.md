@@ -57,6 +57,13 @@ Like `juicer`, but without all those calories
 
 ## Setup & Dependencies
 
+* snakemake version 5.10.0
+    ```bash
+    python3 -m venv env
+    source minenv/bin/activate
+    pip3 install --upgrade snakemake==5.10.0
+    ```
+
 * python 3 package `psutil` for benchmarking
     ```
     module load python/3.6.6
