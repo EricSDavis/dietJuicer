@@ -18,6 +18,8 @@ python3 -m venv env && source env/bin/activate && pip3 install -r requirements.t
 ## Make directory for slurm logs
 mkdir -p logs_slurm
 
-## Execute snakemake
-# snakemake -s Snakefile --cluster-config cluster.yaml --cluster 'sbatch -t {cluster.time} --mem={cluster.mem} -c {cluster.tasks} -o {cluster.output} -e {cluster.error}'
-snakemake -j 50 -s Snakefile --configfile config/config.yaml --latency-wait 500 --cluster-config config/cluster.yaml --cluster "sbatch --job-name {cluster.name} -p {cluster.partition} -n {cluster.tasks} -N {cluster.nodes} --mem={cluster.mem} -t {cluster.time} --output {cluster.output} --error {cluster.error}"
+## Execute splitFASTQ snakemake workflow
+snakemake -j 50 -s splitFASTQ --latency-wait 500  --cluster "sbatch"
+
+## Execute alignFASTQ snakemake workflow
+snakemake -j 50 -s alignFASTQ --latency-wait 500 --cluster-config config/cluster.yaml --cluster "sbatch --job-name {cluster.name} -p {cluster.partition} -n {cluster.tasks} -N {cluster.nodes} --mem={cluster.mem} -t {cluster.time} --output {cluster.output} --error {cluster.error}"

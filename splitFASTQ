@@ -16,47 +16,32 @@ onsuccess:
 ##### Define rules #####
 rule all:
 	input:
-		"output/splitFASTQ_done.txt"
+		expand("output/split{R}_done.txt", R=['R1', 'R2'])
 
-checkpoint splitR1:
+rule splitR1:
 	input:
 		lambda wildcards: samples.iloc[[int(i) for i in samples.index]]["Read1"]
 	output:
-		directory('output/splitsR1')
+		'output/splitR1_done.txt'
 	params:
 		splitsize = config['split']['splitsize']
 	shell:
 		"""
-		mkdir -p {output};
-		gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='gzip > {output}/$FILE.gz';
+		mkdir -p output/splitsR1;
+		gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='gzip > output/splitsR1/$FILE.gz';
+		touch {output};
 		"""
 
-checkpoint splitR2:
+rule splitR2:
 	input:
 		lambda wildcards: samples.iloc[[int(i) for i in samples.index]]["Read2"]
 	output:
-		directory('output/splitsR2')
+		'output/splitR2_done.txt'
 	params:
 		splitsize = config['split']['splitsize']
 	shell:
 		"""
-		mkdir -p {output};
-		gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='gzip > {output}/$FILE.gz';
+		mkdir -p output/splitsR2;
+		gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='gzip > output/splitsR2/$FILE.gz';
+		touch {output};
 		"""
-
-def collectSplitsR1(wildcards):
-	checkpoint_output = checkpoints.splitR1.get(**wildcards).output[0]
-	return expand('output/splitsR1/{sampleR1}_R1.fastq.gz', sampleR1=glob_wildcards(os.path.join(checkpoint_output, '{sampleR1}_R1.fastq.gz')).sampleR1)
-
-def collectSplitsR2(wildcards):
-	checkpoint_output = checkpoints.splitR2.get(**wildcards).output[0]
-	return expand('output/splitsR2/{sampleR2}_R2.fastq.gz', sampleR2=glob_wildcards(os.path.join(checkpoint_output, '{sampleR2}_R2.fastq.gz')).sampleR2)
-
-rule collect:
-	input:
-		collectSplitsR1, 
-		collectSplitsR2
-	output:
-		'output/splitFASTQ_done.txt'
-	shell:
-		'echo {input} > {output}'
