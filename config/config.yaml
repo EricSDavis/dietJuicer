@@ -1,8 +1,8 @@
-
-## Location of Sample-sheet and read paths
+## Location of Sample-sheet containing read paths
 samples: 
   'samples.txt'
 
+## Prefix to add to each output file
 prefix:
   'CI_THP1_A_1.1.1'
 
