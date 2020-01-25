@@ -12,12 +12,12 @@ Like `juicer`, but without all those calories
 
     For running locally use -b dietJuicerLocal
     ```bash
-    git clone -b dietJuicerLocal https://github.com/EricSDavis/dietJuicer.git
+    git clone -b dietJuicerLocal https://github.com/EricSDavis/dietJuicer.git .
     ```   
 
     For running on an HPC use -b dietJuicerCluster
     ```bash
-    git clone -b dietJuicerCluster https://github.com/EricSDavis/dietJuicer.git
+    git clone -b dietJuicerCluster https://github.com/EricSDavis/dietJuicer.git .
     ```
 
 2. Edit `samples.txt` to reflect your sample information
@@ -56,6 +56,13 @@ Like `juicer`, but without all those calories
 4. Launch snakemake pipeline directly or with the `runJuicer.sh` script. If running locally, `sh runJuicer.sh` will launch snakemake directly. If running on a cluster `sbatch runJuicer.sh` will submit a long-running, low resource job that will spawn other jobs in the pipeline using SLURM. For other job schedulers, copy the snakemake command and wrap it in the appropriate script.
 
 ## Setup & Dependencies
+
+* snakemake version 5.10.0
+    ```bash
+    python3 -m venv env
+    source minenv/bin/activate
+    pip3 install --upgrade snakemake==5.10.0
+    ```
 
 * python 3 package `psutil` for benchmarking
     ```

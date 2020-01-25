@@ -8,7 +8,7 @@ prefix:
 
 ## Genome-specific reference parameters
 fasta:
-  '/Users/eric/Phanstiel\ Lab\ Dropbox/Eric\ Davis/genomes/hg19/bwa/hg19.fa' #'/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
+  '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
 
 site:
   "MboI" #or 'none'

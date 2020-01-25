@@ -4,7 +4,7 @@
 import pandas as pd
 import glob
 
-##### Load config and sample sheets #####
+##### Load config file #####
 
 configfile: "config/config.yaml"
 
@@ -35,8 +35,8 @@ rule countLigations:
 		ligation = config['countLigations']['ligation']
 	benchmark: 
 		'output/benchmarks/{prefix}_countLigations_split{sample}.tsv'
-	run:
-		shell("R1={input.R1} R2={input.R2} ligation={params.ligation} temp={output.temp} res={output.res} linecount={output.linecount} sh scripts/countLigations.sh 2> {log.err} 1> {log.out}")
+	shell:
+		"R1={input.R1} R2={input.R2} ligation={params.ligation} temp={output.temp} res={output.res} linecount={output.linecount} sh scripts/countLigations.sh 2> {log.err} 1> {log.out}"
 
 rule align:
 	input:
@@ -46,14 +46,14 @@ rule align:
 		sam = temp("output/{prefix}_align_split{sample}.sam") ## Make temporary
 	log:
 		err = "output/logs/{prefix}_align_split{sample}.err"
-	threads: 10 #4
+	threads: 4
 	params:
 		fasta = config['fasta']
 	benchmark: 
 		"output/benchmarks/{prefix}_align_split{sample}.tsv"
-	run:
-		# shell("module load bwa"),
-		shell("bwa mem -SP5M -t {threads} {params.fasta} {input.R1} {input.R2} > {output.sam} 2> {log.err}")
+	shell:
+		"module load bwa; "
+		"bwa mem -SP5M -t {threads} {params.fasta} {input.R1} {input.R2} > {output.sam} 2> {log.err}"
 
 rule chimera:
 	input:
@@ -73,7 +73,7 @@ rule chimera:
 	benchmark: 
 		'output/benchmarks/{prefix}_chimera_split{sample}.tsv'
 	run:
-		shell('touch {output}'),
+		shell('touch {output}')
 		shell('gawk -v "fname"={params.fname} -v "mapq0_reads_included"={params.mapq0_reads_included} -f ./scripts/chimeric_blacklist.awk {input.sam}')
 
 rule fragment:
@@ -104,9 +104,9 @@ rule sam2bam:
 		'output/{prefix}_sam2bam_split{sample}_{extension}.bam'
 	benchmark:
 		'output/benchmarks/{prefix}_fragment_split{sample}_{extension}.tsv'
-	run:
-		# shell('module load samtools'),
-		shell('samtools view -hb {input} > {output}')
+	shell:
+		'module load samtools; '
+		'samtools view -hb {input} > {output}'
 
 rule sort:
 	input:
@@ -127,19 +127,19 @@ rule merge:
 		'output/{prefix}_merge_{extension}.bam'
 	log:
 		err = "output/logs/{prefix}_merge_{extension}.err"
-	threads: 1#10
+	threads: 1
 	benchmark:
 		'output/benchmarks/{prefix}_merge_{extension}.tsv'
-	run:
-		# shell('module load samtools'),
-		shell('samtools merge -n {output} {input} 2> {log.err}')
+	shell:
+		'module load samtools; '
+		'samtools merge -n {output} {input} 2> {log.err}'
 
 rule mergedSort:
 	input:
 		expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample)
 	output:
 		'output/{prefix}_mergedSort_merged_sort.txt'
-	threads: 1#10
+	threads: 1
 	shadow: "minimal"
 	benchmark:
 		'output/benchmarks/{prefix}_mergedSort.tsv'
@@ -182,12 +182,12 @@ rule dedupAlignablePart2:
 	output:
 		dedup_sam = 'output/{prefix}_align_split{sample}_alignable_dedup.sam',
 		bam = 'output/{prefix}_align_split{sample}_alignable.bam'
-	threads: 1#10
+	threads: 1
 	benchmark:
 		'output/benchmarks/{prefix}_dedupAlignablePart2_split{sample}.tsv'
 	shell:
 		"""
-		# module load samtools
+		module load samtools
 		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam}
 		samtools view -hb {input.alignable} > {output.bam}
 		"""
@@ -199,12 +199,12 @@ rule dedupAlignablePart3:
 		'output/{prefix}_dedupAlignablePart3_alignable.bam'
 	log:
 		err = "output/logs/{prefix}_dedupAlignablePart3_alignable.err"
-	threads: 1#10
+	threads: 1
 	benchmark:
 		'output/benchmarks/{prefix}_dedupAlignablePart3.tsv'
-	run:
-		# shell('module load samtools'),
-		shell('samtools merge -n {output} {input} 2> {log.err}')
+	shell:
+		'module load samtools; '
+		'samtools merge -n {output} {input} 2> {log.err}'
 
 rule dupStats:
 	input:
