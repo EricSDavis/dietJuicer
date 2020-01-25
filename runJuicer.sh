@@ -7,6 +7,9 @@
 #SBATCH -p general
 #SBATCH --mem=2gb
 
+## Exit if any command fails
+set -e
+
 ## Load required modules
 module load python/3.6.6
 module load bwa
