@@ -4,7 +4,9 @@
 import pandas as pd
 import glob
 
-##### Load sample sheet #####
+##### Load config and sample sheets #####
+
+configfile: "config/config.yaml"
 
 samples = pd.read_table(config["samples"])
 

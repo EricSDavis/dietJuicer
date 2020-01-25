@@ -22,7 +22,7 @@ python3 -m venv env && source env/bin/activate && pip3 install -r requirements.t
 mkdir -p logs_slurm
 
 ## Execute splitFASTQ snakemake workflow
-snakemake -j 50 -s splitFASTQ --latency-wait 500 --configfile "config/config.yaml" --cluster-config "config/cluster.yaml" --cluster "sbatch --job-name {cluster.name} -p {cluster.partition} -n {cluster.tasks} -N {cluster.nodes} --mem={cluster.mem} -t {cluster.time} --output {cluster.output} --error {cluster.error}"
+snakemake -j 50 -s splitFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch --job-name {cluster.name} -p {cluster.partition} -n {cluster.tasks} -N {cluster.nodes} --mem={cluster.mem} -t {cluster.time} --output {cluster.output} --error {cluster.error}"
 
 ## Execute alignFASTQ snakemake workflow
-snakemake -j 50 -s alignFASTQ --latency-wait 500 --configfile "config/config.yaml" --cluster-config "config/cluster.yaml" --cluster "sbatch --job-name {cluster.name} -p {cluster.partition} -n {cluster.tasks} -N {cluster.nodes} --mem={cluster.mem} -t {cluster.time} --output {cluster.output} --error {cluster.error}"
+snakemake -j 50 -s alignFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch --job-name {cluster.name} -p {cluster.partition} -n {cluster.tasks} -N {cluster.nodes} --mem={cluster.mem} -t {cluster.time} --output {cluster.output} --error {cluster.error}"

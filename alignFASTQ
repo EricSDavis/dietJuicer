@@ -4,6 +4,10 @@
 import pandas as pd
 import glob
 
+##### Load config file #####
+
+configfile: "config/config.yaml"
+
 onsuccess:
 	print("alignFASTQ completed successfully!")
 
