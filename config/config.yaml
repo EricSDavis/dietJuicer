@@ -18,7 +18,7 @@ site_file:
 
 ## Rule-specific parameters
 split:
-  splitsize: 2000000
+  splitsize: 900000000000
 
 countLigations:
   ligation: "GATCGATC"

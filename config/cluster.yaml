@@ -1,130 +1,21 @@
 __default__:
-  name: "{rule}"
-  partition: general
-  tasks: "{threads}"
+  name: "{rule}" # -J
+  partition: general # -p
+  time: 1440 # -t
+  cpusPerTask: "{threads}" # -c
+  memPerCpu: 4G # --mem-per-cpu
   nodes: 1
-  mem: 2G #16G
-  time: 1440
   output: "logs_slurm/{rule}.{wildcards}.out"
   error: "logs_slurm/{rule}.{wildcards}.err"
 
-## splitFASTQ 
-splitR1:
-  partition: general
-  time: 00:10:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G
-
-splitR1:
-  partition: general
-  time: 00:10:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G
-
-## alignFASTQ
-countLigations:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G #5G
-
+## Multi-threaded Rules
 align:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 16G #16G
-
-chimera:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-fragment:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-sam2bam:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
+  memPerCpu: 4G
 
 sort:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-merge:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
+  time: 4320
+  memPerCpu: 8G
 
 mergedSort:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-dedup:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-dedupAlignablePart1:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-dedupAlignablePart2:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-dedupAlignablePart3:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-dupStats:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-inter:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
-
-inter30:
-  partition: general
-  time: 00:10:00 #24:00:00
-  tasks: "{threads}"
-  nodes: 1
-  mem: 2G #16G
+  time: 4320
+  memPerCpu: 8G
