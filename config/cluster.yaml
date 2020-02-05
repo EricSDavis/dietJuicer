@@ -1,7 +1,7 @@
 __default__:
   name: "{rule}" # -J
   partition: general # -p
-  time: 1440 # -t
+  time: 4320 # -t
   cpusPerTask: "{threads}" # -c
   memPerCpu: 4G # --mem-per-cpu
   nodes: 1
@@ -13,9 +13,7 @@ align:
   memPerCpu: 4G
 
 sort:
-  time: 4320
   memPerCpu: 8G
 
 mergedSort:
-  time: 4320
   memPerCpu: 8G

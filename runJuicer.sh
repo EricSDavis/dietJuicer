@@ -22,10 +22,10 @@ python3 -m venv env && source env/bin/activate && pip3 install -r requirements.t
 mkdir -p logs_slurm
 
 ## Execute splitFASTQ snakemake workflow
-snakemake -j 50 -s splitFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error}"
+snakemake -j 50 -s workflows/splitFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error}"
 
 ## Execute alignFASTQ snakemake workflow
-snakemake -j 50 -s alignFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error}"
+snakemake -j 50 -s workflows/alignFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error}"
 
 ## Success message
 echo "Entire workflow completed successfully!"

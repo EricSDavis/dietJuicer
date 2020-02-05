@@ -18,7 +18,7 @@ site_file:
 
 ## Rule-specific parameters
 split:
-  splitsize: 900000000000
+  splitsize: 900000000000 ## 800000000 will give about 200M reads/file (i.e. 4000000 = 1M reads/file)
 
 countLigations:
   ligation: "GATCGATC"
