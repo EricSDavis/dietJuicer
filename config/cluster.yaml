@@ -1,5 +1,5 @@
 __default__:
-  name: "{prefix}_{rule}_{sample}" # -J
+  name: "rule={rule},{wildcards}" # -J
   partition: general # -p
   time: 4320 # -t
   cpusPerTask: "{threads}" # -c
