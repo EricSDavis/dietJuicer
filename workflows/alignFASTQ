@@ -85,6 +85,8 @@ rule fragment:
 		norm = rules.chimera.output.norm
 	output:
 		frag = "output/{prefix}_fragment_split{sample}.frag.txt",
+	log:
+		err = "output/logs/{prefix}_fragment_split{sample}.err"
 	threads: 1
 	params:
 		site = config['site'],
@@ -95,9 +97,9 @@ rule fragment:
 		"""
 		if [ {params.site} != "none" ]
 		then
-				./scripts/fragment.pl {input.norm} {output.frag} {params.site_file}    
+				./scripts/fragment.pl {input.norm} {output.frag} {params.site_file} 2> {log.err}    
 		else
-				awk '{{printf("%s %s %s %d %s %s %s %d", $1, $2, $3, 0, $4, $5, $6, 1); for (i=7; i<=NF; i++) {{printf(" %s",$i);}}printf("\n");}}' {input.norm} > {output.frag}
+				awk '{{printf("%s %s %s %d %s %s %s %d", $1, $2, $3, 0, $4, $5, $6, 1); for (i=7; i<=NF; i++) {{printf(" %s",$i);}}printf("\n");}}' {input.norm} > {output.frag} 2> {log.err}
 		fi
 		"""
 
@@ -106,17 +108,21 @@ rule sam2bam:
 		lambda wildcards: ['output/{prefix}_align_split{sample}_{extension}.sam'.format(prefix=wildcards.prefix, sample=wildcards.sample, extension=wildcards.extension)]
 	output:
 		'output/{prefix}_sam2bam_split{sample}_{extension}.bam'
+	log:
+		err = "output/logs/{prefix}_sam2bam_split{sample}_{extension}.err"
 	benchmark:
 		'output/benchmarks/{prefix}_fragment_split{sample}_{extension}.tsv'
 	shell:
 		'module load samtools; '
-		'samtools view -hb {input} > {output}'
+		'samtools view -hb {input} > {output} 2> {log.err}'
 
 rule sort:
 	input:
 		rules.fragment.output.frag
 	output:
 		sorted = "output/{prefix}_sort_split{sample}.sort.txt"
+	log:
+		err = "output/logs/{prefix}_sort_split{sample}.err"
 	threads: 8
 	shadow: "minimal"
 	benchmark:
@@ -124,7 +130,7 @@ rule sort:
 	shell:
 		"""
 		tmp_dir=$(mktemp -d -p $PWD)
-		sort --parallel={threads} -T $tmp_dir -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted}
+		sort --parallel={threads} -T $tmp_dir -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted} 2> {log.err}
 		rm -rf $tmp_dir
 		"""
 
@@ -147,6 +153,8 @@ rule mergedSort:
 		expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample)
 	output:
 		'output/{prefix}_mergedSort_merged_sort.txt'
+	log:
+		err = 'output/logs/{prefix}_mergedSort.err'
 	threads: 8
 	shadow: "minimal"
 	benchmark:
@@ -154,7 +162,7 @@ rule mergedSort:
 	shell:
 		"""
 		tmp_dir=$(mktemp -d -p $PWD)
-		sort --parallel={threads} -T $tmp_dir -m -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output}
+		sort --parallel={threads} -T $tmp_dir -m -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output} 2> {log.err}
 		rm -rf $tmp_dir
 		"""
 
@@ -165,6 +173,8 @@ rule dedup:
 		dups = "output/{prefix}_dedup_dups.txt",
 		merged_nodups = "output/{prefix}_dedup_merged_nodups.txt",
 		optdups = "output/{prefix}_dedup_opt_dups.txt"
+	log:
+		err = 'output/logs/{prefix}_dedup.err'
 	params:
 		name = 'output/{prefix}_'
 	threads: 1
@@ -172,19 +182,21 @@ rule dedup:
 		'output/benchmarks/{prefix}_dedup.tsv'
 	run:
 		shell('touch {output}'),
-		shell('awk -f ./scripts/dups.awk -v name={params.name} {input}')
+		shell('awk -f ./scripts/dups.awk -v name={params.name} {input} 2> {log.err}')
 
 rule dedupAlignablePart1:
 	input:
 		rules.dedup.output.merged_nodups
 	output:
 		temp('output/{prefix}_align_split{sample}_dedup') ## Make temporary
+	log:
+		err = 'output/logs/{prefix}_dedupAlignablePart1_split{sample}.err'
 	threads: 1
 	benchmark:
 		'output/benchmarks/{prefix}_dedupAlignablePart1_split{sample}.tsv'
 	shell:
 		"""
-		awk '{{split($(NF-1), a, "$"); split($NF, b, "$"); print a[3],b[3] > a[2]"_dedup"}}' {input}
+		awk '{{split($(NF-1), a, "$"); split($NF, b, "$"); print a[3],b[3] > a[2]"_dedup"}}' {input} 2> {log.err}
 		"""
 
 rule dedupAlignablePart2:
@@ -194,14 +206,16 @@ rule dedupAlignablePart2:
 	output:
 		dedup_sam = 'output/{prefix}_align_split{sample}_alignable_dedup.sam',
 		bam = 'output/{prefix}_align_split{sample}_alignable.bam'
+	log:
+		err = 'output/logs/{prefix}_dedupAlignablePart2_split{sample}.err'
 	threads: 1
 	benchmark:
 		'output/benchmarks/{prefix}_dedupAlignablePart2_split{sample}.tsv'
 	shell:
 		"""
 		module load samtools
-		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam}
-		samtools view -hb {input.alignable} > {output.bam}
+		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam} 2> {log.err}
+		samtools view -hb {input.alignable} > {output.bam} 2>> {log.err}
 		"""
 
 rule dedupAlignablePart3:
@@ -224,6 +238,8 @@ rule dupStats:
 	output:
 		stats_dups = 'output/{prefix}_dupStats_stats_dups.txt',
 		hists = 'output/{prefix}_dupStats_stats_dups_hists.m'
+	log:
+		err = 'output/logs/{prefix}_dupStats.err'
 	params:
 		site = config['site'],
 		site_file = config['site_file']
@@ -231,7 +247,7 @@ rule dupStats:
 	benchmark:
 		'output/benchmarks/{prefix}_dupStats.tsv'
 	run:
-		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input}')
+		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input} 2> {log.err}')
 
 rule inter:
 	input:
@@ -239,6 +255,8 @@ rule inter:
 		merged_nodups = rules.dedup.output.merged_nodups
 	output:
 		'output/{prefix}_inter.txt'
+	log:
+		err = 'output/logs/{prefix}_inter.err'
 	params:
 		site = config['site'],
 		site_file = config['site_file']
@@ -247,9 +265,9 @@ rule inter:
 		'output/benchmarks/{prefix}_inter.tsv'
 	shell:
 		"""
-		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output}
-		./scripts/juicer_tools LibraryComplexity output {output} >> {output}
-		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 1 {input.merged_nodups}
+		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output} 2> {log.err}
+		./scripts/juicer_tools LibraryComplexity output {output} >> {output} 2>> {log.err}
+		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 1 {input.merged_nodups} 2>> {log.err}
 		"""
 
 rule inter30:
@@ -258,6 +276,8 @@ rule inter30:
 		merged_nodups = rules.dedup.output.merged_nodups
 	output:
 		'output/{prefix}_inter_30.txt'
+	log:
+		err = 'output/logs/{prefix}_inter_30.err'
 	params:
 		site = config['site'],
 		site_file = config['site_file']
@@ -266,7 +286,7 @@ rule inter30:
 		'output/benchmarks/{prefix}_inter30.tsv'
 	shell:
 		"""
-		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output}
-		./scripts/juicer_tools LibraryComplexity output {output} >> {output}
-		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 30 {input.merged_nodups}
+		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output} 2> {log.err}
+		./scripts/juicer_tools LibraryComplexity output {output} >> {output} 2>> {log.err}
+		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 30 {input.merged_nodups} 2>> {log.err}
 		"""
