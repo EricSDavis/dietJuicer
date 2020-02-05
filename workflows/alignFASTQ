@@ -67,6 +67,9 @@ rule chimera:
 		unmapped = temp("output/{prefix}_align_split{sample}_unmapped.sam"), ## Make temporary
 		mapq0 = temp("output/{prefix}_align_split{sample}_mapq0.sam"), ## Make temporary
 		unpaired = temp("output/{prefix}_align_split{sample}_unpaired.sam") ## Make temporary
+	log:
+		err = "output/logs/{prefix}_chimera_split{sample}.err",
+		out = "output/logs/{prefix}_chimera_split{sample}.out"
 	threads: 1
 	params:
 		fname = 'output/{prefix}_align_split{sample}',
@@ -75,7 +78,7 @@ rule chimera:
 		'output/benchmarks/{prefix}_chimera_split{sample}.tsv'
 	run:
 		shell('touch {output}')
-		shell('gawk -v "fname"={params.fname} -v "mapq0_reads_included"={params.mapq0_reads_included} -f ./scripts/chimeric_blacklist.awk {input.sam}')
+		shell('gawk -v "fname"={params.fname} -v "mapq0_reads_included"={params.mapq0_reads_included} -f ./scripts/chimeric_blacklist.awk {input.sam} 2> {log.err} 1> {log.out}')
 
 rule fragment:
 	input:
