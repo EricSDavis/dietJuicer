@@ -61,6 +61,7 @@ rule chimera:
 		sam = rules.align.output.sam
 	output:
 		norm = "output/{prefix}_align_split{sample}_norm.txt",
+		normRes = "output/{prefix}_align_split{sample}_norm.txt.res.txt",
 		alignable = temp("output/{prefix}_align_split{sample}_alignable.sam"), ## Make temporary
 		collisions = temp("output/{prefix}_align_split{sample}_collisions.sam"), ## Make temporary
 		lowqcollisions = temp("output/{prefix}_align_split{sample}_collisions_low_mapq.sam"), ## Make temporary
@@ -84,7 +85,7 @@ rule fragment:
 	input:
 		norm = rules.chimera.output.norm
 	output:
-		frag = "output/{prefix}_fragment_split{sample}.frag.txt",
+		frag = "output/{prefix}_fragment_split{sample}.frag.txt"
 	log:
 		err = "output/logs/{prefix}_fragment_split{sample}.err"
 	threads: 1
@@ -249,12 +250,23 @@ rule dupStats:
 	run:
 		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input} 2> {log.err}')
 
+def interInput(wildcards):
+	sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample
+	combined=[]
+	for i in sample:
+		combined.append('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt'.format(prefix=config['prefix'], sample=i))
+		combined.append('output/{prefix}_align_split{sample}_norm.txt.res.txt'.format(prefix=config['prefix'], sample=i))
+	return combined
+
 rule inter:
 	input:
-		res = expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample),
+		res = interInput,
+		dups = rules.dedup.output.dups,
+		optdups = rules.dedup.output.optdups,
 		merged_nodups = rules.dedup.output.merged_nodups
 	output:
-		'output/{prefix}_inter.txt'
+		inter = 'output/{prefix}_inter.txt',
+		inter30 = 'output/{prefix}_inter_30.txt'
 	log:
 		err = 'output/logs/{prefix}_inter.err'
 	params:
@@ -265,28 +277,11 @@ rule inter:
 		'output/benchmarks/{prefix}_inter.tsv'
 	shell:
 		"""
-		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output} 2> {log.err}
-		./scripts/juicer_tools LibraryComplexity output {output} >> {output} 2>> {log.err}
-		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 1 {input.merged_nodups} 2>> {log.err}
-		"""
+		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter} 2> {log.err}
+		./scripts/juicer_tools LibraryComplexity $(wc -l < {input.merged_nodups}) $(wc -l < {input.dups}) $(wc -l < {input.optdups}) >> {output.inter} 2>> {log.err}
+		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.inter} -q 1 {input.merged_nodups} 2>> {log.err}
 
-rule inter30:
-	input:
-		res = expand('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample),
-		merged_nodups = rules.dedup.output.merged_nodups
-	output:
-		'output/{prefix}_inter_30.txt'
-	log:
-		err = 'output/logs/{prefix}_inter_30.err'
-	params:
-		site = config['site'],
-		site_file = config['site_file']
-	threads: 1
-	benchmark:
-		'output/benchmarks/{prefix}_inter30.tsv'
-	shell:
-		"""
-		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output} 2> {log.err}
-		./scripts/juicer_tools LibraryComplexity output {output} >> {output} 2>> {log.err}
-		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output} -q 30 {input.merged_nodups} 2>> {log.err}
+		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter30} 2>> {log.err}
+		./scripts/juicer_tools LibraryComplexity $(wc -l < {input.merged_nodups}) $(wc -l < {input.dups}) $(wc -l < {input.optdups}) >> {output.inter30} 2>> {log.err}
+		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.inter30} -q 30 {input.merged_nodups} 2>> {log.err}
 		"""
