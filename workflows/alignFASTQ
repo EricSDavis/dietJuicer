@@ -25,9 +25,9 @@ rule countLigations:
 		R1 = lambda wildcards: ['output/splitsR1/{sample}_R1.fastq.gz'.format(sample=wildcards.sample)],
 		R2 = lambda wildcards: ['output/splitsR2/{sample}_R2.fastq.gz'.format(sample=wildcards.sample)]
 	output:
-		temp = temp('output/{prefix}_countLigations_split{sample}_temp'),
-		res = 'output/{prefix}_countLigations_split{sample}_norm.txt.res.txt',
-		linecount = 'output/{prefix}_countLigations_split{sample}_linecount.txt'
+		temp = temp('output/{prefix}_countLigations_split{sample}_temp'), ## Make temporary
+		res = temp('output/{prefix}_countLigations_split{sample}_norm.txt.res.txt'),
+		linecount = temp('output/{prefix}_countLigations_split{sample}_linecount.txt')
 	log:
 		err = "output/logs/{prefix}_countLigations_split{sample}.err",
 		out = "output/logs/{prefix}_countLigations_split{sample}.out"
@@ -60,8 +60,8 @@ rule chimera:
 	input:
 		sam = rules.align.output.sam
 	output:
-		norm = "output/{prefix}_align_split{sample}_norm.txt",
-		normRes = "output/{prefix}_align_split{sample}_norm.txt.res.txt",
+		norm = temp("output/{prefix}_align_split{sample}_norm.txt"),
+		normRes = temp("output/{prefix}_align_split{sample}_norm.txt.res.txt"),
 		alignable = temp("output/{prefix}_align_split{sample}_alignable.sam"), ## Make temporary
 		collisions = temp("output/{prefix}_align_split{sample}_collisions.sam"), ## Make temporary
 		lowqcollisions = temp("output/{prefix}_align_split{sample}_collisions_low_mapq.sam"), ## Make temporary
@@ -85,7 +85,7 @@ rule fragment:
 	input:
 		norm = rules.chimera.output.norm
 	output:
-		frag = "output/{prefix}_fragment_split{sample}.frag.txt"
+		frag = temp("output/{prefix}_fragment_split{sample}.frag.txt")
 	log:
 		err = "output/logs/{prefix}_fragment_split{sample}.err"
 	threads: 1
@@ -108,7 +108,7 @@ rule sam2bam:
 	input:
 		lambda wildcards: ['output/{prefix}_align_split{sample}_{extension}.sam'.format(prefix=wildcards.prefix, sample=wildcards.sample, extension=wildcards.extension)]
 	output:
-		'output/{prefix}_sam2bam_split{sample}_{extension}.bam'
+		temp('output/{prefix}_sam2bam_split{sample}_{extension}.bam')
 	log:
 		err = "output/logs/{prefix}_sam2bam_split{sample}_{extension}.err"
 	benchmark:
@@ -121,7 +121,7 @@ rule sort:
 	input:
 		rules.fragment.output.frag
 	output:
-		sorted = "output/{prefix}_sort_split{sample}.sort.txt"
+		sorted = temp("output/{prefix}_sort_split{sample}.sort.txt")
 	log:
 		err = "output/logs/{prefix}_sort_split{sample}.err"
 	threads: 8
@@ -139,7 +139,7 @@ rule merge:
 	input:
 		lambda wildcards: expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample, extension=wildcards.extension)
 	output:
-		'output/{prefix}_merge_{extension}.bam'
+		temp('output/{prefix}_merge_{extension}.bam')
 	log:
 		err = "output/logs/{prefix}_merge_{extension}.err"
 	threads: 1
@@ -153,7 +153,7 @@ rule mergedSort:
 	input:
 		expand('output/{prefix}_sort_split{sample}.sort.txt', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample)
 	output:
-		'output/{prefix}_mergedSort_merged_sort.txt'
+		temp('output/{prefix}_mergedSort_merged_sort.txt')
 	log:
 		err = 'output/logs/{prefix}_mergedSort.err'
 	threads: 8
@@ -171,9 +171,9 @@ rule dedup:
 	input:
 		rules.mergedSort.output
 	output:
-		dups = "output/{prefix}_dedup_dups.txt",
+		dups = temp("output/{prefix}_dedup_dups.txt"),
 		merged_nodups = "output/{prefix}_dedup_merged_nodups.txt",
-		optdups = "output/{prefix}_dedup_opt_dups.txt"
+		optdups = temp("output/{prefix}_dedup_opt_dups.txt")
 	log:
 		err = 'output/logs/{prefix}_dedup.err'
 	params:
@@ -205,8 +205,8 @@ rule dedupAlignablePart2:
 		dedup = rules.dedupAlignablePart1.output,
 		alignable = rules.chimera.output.alignable
 	output:
-		dedup_sam = 'output/{prefix}_align_split{sample}_alignable_dedup.sam',
-		bam = 'output/{prefix}_align_split{sample}_alignable.bam'
+		dedup_sam = temp('output/{prefix}_align_split{sample}_alignable_dedup.sam'),
+		bam = temp('output/{prefix}_align_split{sample}_alignable.bam')
 	log:
 		err = 'output/logs/{prefix}_dedupAlignablePart2_split{sample}.err'
 	threads: 1
@@ -223,7 +223,7 @@ rule dedupAlignablePart3:
 	input:
 		lambda wildcards: expand('output/{prefix}_align_split{sample}_alignable.bam', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample)
 	output:
-		'output/{prefix}_dedupAlignablePart3_alignable.bam'
+		temp('output/{prefix}_dedupAlignablePart3_alignable.bam')
 	log:
 		err = "output/logs/{prefix}_dedupAlignablePart3_alignable.err"
 	threads: 1
@@ -237,8 +237,8 @@ rule dupStats:
 	input:
 		rules.dedup.output.dups
 	output:
-		stats_dups = 'output/{prefix}_dupStats_stats_dups.txt',
-		hists = 'output/{prefix}_dupStats_stats_dups_hists.m'
+		stats_dups = temp('output/{prefix}_dupStats_stats_dups.txt'),
+		hists = temp('output/{prefix}_dupStats_stats_dups_hists.m')
 	log:
 		err = 'output/logs/{prefix}_dupStats.err'
 	params:
