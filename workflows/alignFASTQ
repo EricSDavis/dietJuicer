@@ -14,11 +14,7 @@ onsuccess:
 ##### Define rules #####
 rule all:
 	input:
-		expand('output/{prefix}_merge_{extension}.bam', prefix=config["prefix"], extension=['collisions', 'collisions_low_mapq', 'unmapped', 'mapq0']),
-		expand('output/{prefix}_dedupAlignablePart3_alignable.bam', prefix=config["prefix"]),
-		expand('output/{prefix}_dupStats_stats_dups{extension}', prefix=config["prefix"], extension=['.txt', '_hists.m']),
-		expand('output/{prefix}_inter.txt', prefix=config["prefix"]),
-		expand('output/{prefix}_inter_30.txt', prefix=config["prefix"])
+		expand('output/{prefix}_inter{ext}', prefix=config["prefix"], ext=['.txt', '_hists.m', '.hic', '_30.txt', '_30_hists.m', '_30.hic'])
 
 rule countLigations:
 	input:
@@ -104,19 +100,6 @@ rule fragment:
 		fi
 		"""
 
-rule sam2bam:
-	input:
-		lambda wildcards: ['output/{prefix}_align_split{sample}_{extension}.sam'.format(prefix=wildcards.prefix, sample=wildcards.sample, extension=wildcards.extension)]
-	output:
-		temp('output/{prefix}_sam2bam_split{sample}_{extension}.bam')
-	log:
-		err = "output/logs/{prefix}_sam2bam_split{sample}_{extension}.err"
-	benchmark:
-		'output/benchmarks/{prefix}_fragment_split{sample}_{extension}.tsv'
-	shell:
-		'module load samtools; '
-		'samtools view -hb {input} > {output} 2> {log.err}'
-
 rule sort:
 	input:
 		rules.fragment.output.frag
@@ -134,20 +117,6 @@ rule sort:
 		sort --parallel={threads} -T $tmp_dir -k2,2d -k6,6d -k4,4n -k8,8n -k1,1n -k5,5n -k3,3n {input} > {output.sorted} 2> {log.err}
 		rm -rf $tmp_dir
 		"""
-
-rule merge:
-	input:
-		lambda wildcards: expand('output/{prefix}_sam2bam_split{sample}_{extension}.bam', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample, extension=wildcards.extension)
-	output:
-		temp('output/{prefix}_merge_{extension}.bam')
-	log:
-		err = "output/logs/{prefix}_merge_{extension}.err"
-	threads: 1
-	benchmark:
-		'output/benchmarks/{prefix}_merge_{extension}.tsv'
-	shell:
-		'module load samtools; '
-		'samtools merge -n {output} {input} 2> {log.err}'
 
 rule mergedSort:
 	input:
@@ -185,71 +154,6 @@ rule dedup:
 		shell('touch {output}'),
 		shell('awk -f ./scripts/dups.awk -v name={params.name} {input} 2> {log.err}')
 
-rule dedupAlignablePart1:
-	input:
-		rules.dedup.output.merged_nodups
-	output:
-		temp('output/{prefix}_align_split{sample}_dedup') ## Make temporary
-	log:
-		err = 'output/logs/{prefix}_dedupAlignablePart1_split{sample}.err'
-	threads: 1
-	benchmark:
-		'output/benchmarks/{prefix}_dedupAlignablePart1_split{sample}.tsv'
-	shell:
-		"""
-		awk '{{split($(NF-1), a, "$"); split($NF, b, "$"); print a[3],b[3] > a[2]"_dedup"}}' {input} 2> {log.err}
-		"""
-
-rule dedupAlignablePart2:
-	input:
-		dedup = rules.dedupAlignablePart1.output,
-		alignable = rules.chimera.output.alignable
-	output:
-		dedup_sam = temp('output/{prefix}_align_split{sample}_alignable_dedup.sam'),
-		bam = temp('output/{prefix}_align_split{sample}_alignable.bam')
-	log:
-		err = 'output/logs/{prefix}_dedupAlignablePart2_split{sample}.err'
-	threads: 1
-	benchmark:
-		'output/benchmarks/{prefix}_dedupAlignablePart2_split{sample}.tsv'
-	shell:
-		"""
-		module load samtools
-		awk 'BEGIN{{OFS="\t"}}FNR==NR{{for (i=$1; i<=$2; i++){{a[i];}} next}}(!(FNR in a) && $1 !~ /^@/){{$2=or($2,1024)}}{{print}}' {input.dedup} {input.alignable} > {output.dedup_sam} 2> {log.err}
-		samtools view -hb {input.alignable} > {output.bam} 2>> {log.err}
-		"""
-
-rule dedupAlignablePart3:
-	input:
-		lambda wildcards: expand('output/{prefix}_align_split{sample}_alignable.bam', prefix=config["prefix"], sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample)
-	output:
-		temp('output/{prefix}_dedupAlignablePart3_alignable.bam')
-	log:
-		err = "output/logs/{prefix}_dedupAlignablePart3_alignable.err"
-	threads: 1
-	benchmark:
-		'output/benchmarks/{prefix}_dedupAlignablePart3.tsv'
-	shell:
-		'module load samtools; '
-		'samtools merge -n {output} {input} 2> {log.err}'
-
-rule dupStats:
-	input:
-		rules.dedup.output.dups
-	output:
-		stats_dups = temp('output/{prefix}_dupStats_stats_dups.txt'),
-		hists = temp('output/{prefix}_dupStats_stats_dups_hists.m')
-	log:
-		err = 'output/logs/{prefix}_dupStats.err'
-	params:
-		site = config['site'],
-		site_file = config['site_file']
-	threads: 1
-	benchmark:
-		'output/benchmarks/{prefix}_dupStats.tsv'
-	run:
-		shell('./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.stats_dups} {input} 2> {log.err}')
-
 def interInput(wildcards):
 	sample=glob_wildcards('output/splitsR1/{sample}_R1.fastq.gz').sample
 	combined=[]
@@ -266,7 +170,7 @@ rule inter:
 		merged_nodups = rules.dedup.output.merged_nodups
 	output:
 		inter = 'output/{prefix}_inter.txt',
-		inter30 = 'output/{prefix}_inter_30.txt'
+		hists = 'output/{prefix}_inter_hists.m'
 	log:
 		err = 'output/logs/{prefix}_inter.err'
 	params:
@@ -280,8 +184,68 @@ rule inter:
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter} 2> {log.err}
 		./scripts/juicer_tools LibraryComplexity $(wc -l < {input.merged_nodups}) $(wc -l < {input.dups}) $(wc -l < {input.optdups}) >> {output.inter} 2>> {log.err}
 		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.inter} -q 1 {input.merged_nodups} 2>> {log.err}
+		"""
 
+rule inter30:
+	input:
+		res = interInput,
+		dups = rules.dedup.output.dups,
+		optdups = rules.dedup.output.optdups,
+		merged_nodups = rules.dedup.output.merged_nodups
+	output:
+		inter30 = 'output/{prefix}_inter_30.txt',
+		hists30 = 'output/{prefix}_inter_30_hists.m'
+	log:
+		err = 'output/logs/{prefix}_inter30.err'
+	params:
+		site = config['site'],
+		site_file = config['site_file']
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_inter.tsv'
+	shell:
+		"""
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter30} 2>> {log.err}
 		./scripts/juicer_tools LibraryComplexity $(wc -l < {input.merged_nodups}) $(wc -l < {input.dups}) $(wc -l < {input.optdups}) >> {output.inter30} 2>> {log.err}
 		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.inter30} -q 30 {input.merged_nodups} 2>> {log.err}
+		"""
+
+rule hic:
+	input:
+		inter = rules.inter.output.inter,
+		hists = rules.inter.output.hists,
+		merged_nodups = rules.dedup.output.merged_nodups
+	output:
+		hic = 'output/{prefix}_inter.hic'
+	log:
+		err = 'output/logs/{prefix}_hic.err',
+		out = 'output/logs/{prefix}_hic.out'
+	params:
+		chromSizes = config['chromSizes']
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_hic.tsv'
+	shell:
+		"""
+		./scripts/juicer_tools pre -s {input.inter} -g {input.hists} -q 1 {input.merged_nodups} {output.hic} {params.chromSizes} 1> {log.out} 2> {log.err}
+		"""
+
+rule hic30:
+	input:
+		inter30 = rules.inter30.output.inter30,
+		hists30 = rules.inter30.output.hists30,
+		merged_nodups = rules.dedup.output.merged_nodups
+	output:
+		hic30 = 'output/{prefix}_inter_30.hic'
+	log:
+		err = 'output/logs/{prefix}_hic30.err',
+		out = 'output/logs/{prefix}_hic30.out'
+	params:
+		chromSizes = config['chromSizes']
+	threads: 1
+	benchmark:
+		'output/benchmarks/{prefix}_hic30.tsv'
+	shell:
+		"""
+		./scripts/juicer_tools pre -s {input.inter30} -g {input.hists30} -q 1 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
 		"""
