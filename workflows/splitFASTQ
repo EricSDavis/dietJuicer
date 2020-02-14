@@ -26,6 +26,8 @@ rule splitR1:
 	params:
 		splitsize = config['split']['splitsize']
 	threads: 1
+	benchmark:
+		'output/benchmarks/splitR1.tsv'
 	shell:
 		"""
 		mkdir -p output/splitsR1;
@@ -41,6 +43,8 @@ rule splitR2:
 	params:
 		splitsize = config['split']['splitsize']
 	threads: 1
+	benchmark:
+		'output/benchmarks/splitR2.tsv'
 	shell:
 		"""
 		mkdir -p output/splitsR2;

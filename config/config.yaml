@@ -4,7 +4,7 @@ samples:
 
 ## Prefix to add to each output file
 prefix:
-  'CI_THP1_A_1.1.1'
+  'prefix'
 
 ## Genome-specific reference parameters
 fasta:
@@ -14,11 +14,14 @@ site:
   "MboI" #or 'none'
 
 site_file:
-  'restriction_sites/hg19_MboI.txt'
+  'restriction_sites/hg19_MboI_chr.txt'
+
+chromSizes:
+  '/proj/phanstiel_lab/software/resources/hg19_chromSizes.txt'
 
 ## Rule-specific parameters
 split:
-  splitsize: 900000000000 ## 800000000 will give about 200M reads/file (i.e. 4000000 = 1M reads/file)
+  splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
 
 countLigations:
   ligation: "GATCGATC"
