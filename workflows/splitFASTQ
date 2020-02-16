@@ -24,7 +24,7 @@ rule splitR1:
 	output:
 		'output/splitR1_done.txt'
 	params:
-		splitsize = config['split']['splitsize']
+		splitsize = config['splitsize']
 	threads: 1
 	benchmark:
 		'output/benchmarks/splitR1.tsv'
@@ -41,7 +41,7 @@ rule splitR2:
 	output:
 		'output/splitR2_done.txt'
 	params:
-		splitsize = config['split']['splitsize']
+		splitsize = config['splitsize']
 	threads: 1
 	benchmark:
 		'output/benchmarks/splitR2.tsv'

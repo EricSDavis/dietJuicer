@@ -28,7 +28,7 @@ rule countLigations:
 		err = "output/logs/{prefix}_countLigations_split{sample}.err",
 		out = "output/logs/{prefix}_countLigations_split{sample}.out"
 	params:
-		ligation = config['countLigations']['ligation']
+		ligation = config['ligation']
 	threads: 1
 	benchmark: 
 		'output/benchmarks/{prefix}_countLigations_split{sample}.tsv'
@@ -70,7 +70,7 @@ rule chimera:
 	threads: 1
 	params:
 		fname = 'output/{prefix}_align_split{sample}',
-		mapq0_reads_included = config['chimera']['mapq0_reads_included']
+		mapq0_reads_included = config['mapq0_reads_included']
 	benchmark: 
 		'output/benchmarks/{prefix}_chimera_split{sample}.tsv'
 	run:
@@ -174,7 +174,7 @@ rule inter:
 	log:
 		err = 'output/logs/{prefix}_inter.err'
 	params:
-		site = config['site'],
+		ligation = config['ligation'],
 		site_file = config['site_file']
 	threads: 1
 	benchmark:
@@ -183,7 +183,7 @@ rule inter:
 		"""
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter} 2> {log.err}
 		./scripts/juicer_tools LibraryComplexity $(wc -l < {input.merged_nodups}) $(wc -l < {input.dups}) $(wc -l < {input.optdups}) >> {output.inter} 2>> {log.err}
-		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.inter} -q 1 {input.merged_nodups} 2>> {log.err}
+		./scripts/statistics.pl -s {params.site_file} -l {params.ligation} -o {output.inter} -q 1 {input.merged_nodups} 2>> {log.err}
 		"""
 
 rule inter30:
@@ -198,7 +198,7 @@ rule inter30:
 	log:
 		err = 'output/logs/{prefix}_inter30.err'
 	params:
-		site = config['site'],
+		ligation = config['ligation'],
 		site_file = config['site_file']
 	threads: 1
 	benchmark:
@@ -207,7 +207,7 @@ rule inter30:
 		"""
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter30} 2>> {log.err}
 		./scripts/juicer_tools LibraryComplexity $(wc -l < {input.merged_nodups}) $(wc -l < {input.dups}) $(wc -l < {input.optdups}) >> {output.inter30} 2>> {log.err}
-		./scripts/statistics.pl -s {params.site_file} -l {params.site} -o {output.inter30} -q 30 {input.merged_nodups} 2>> {log.err}
+		./scripts/statistics.pl -s {params.site_file} -l {params.ligation} -o {output.inter30} -q 30 {input.merged_nodups} 2>> {log.err}
 		"""
 
 rule hic:

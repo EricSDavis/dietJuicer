@@ -1,30 +1,20 @@
 ## Location of Sample-sheet containing read paths
-samples: 
-  'samples.txt'
+samples: 'samples.txt'
 
 ## Prefix to add to each output file
-prefix:
-  'prefix'
+prefix: 'prefix'
 
 ## Genome-specific reference parameters
-fasta:
-  '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
+fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
+chromSizes: '/proj/phanstiel_lab/software/resources/hg19_chromSizes.txt'
 
-site:
-  "MboI" #or 'none'
+## Restriction site information
+site: "MboI" # or 'none'
+site_file: 'restriction_sites/hg19_MboI_chr.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
+ligation: "GATCGATC"
 
-site_file:
-  'restriction_sites/hg19_MboI_chr.txt'
+## Set splitsize
+splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
 
-chromSizes:
-  '/proj/phanstiel_lab/software/resources/hg19_chromSizes.txt'
-
-## Rule-specific parameters
-split:
-  splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
-
-countLigations:
-  ligation: "GATCGATC"
-
-chimera:
-  mapq0_reads_included: 0
+## Additional options
+mapq0_reads_included: 0
