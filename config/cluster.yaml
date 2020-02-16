@@ -8,7 +8,7 @@ __default__:
   output: "logs_slurm/{rule}.{wildcards}.out"
   error: "logs_slurm/{rule}.{wildcards}.err"
 
-## Multi-threaded Rules
+## Multi-threaded / High-memory Rules
 align:
   memPerCpu: 4G
 
@@ -16,4 +16,10 @@ sort:
   memPerCpu: 8G
 
 mergedSort:
+  memPerCpu: 8G
+
+hic:
+  memPerCpu: 8G
+
+hic30:
   memPerCpu: 8G
