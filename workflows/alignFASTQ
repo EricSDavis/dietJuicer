@@ -202,7 +202,7 @@ rule inter30:
 		site_file = config['site_file']
 	threads: 1
 	benchmark:
-		'output/benchmarks/{prefix}_inter.tsv'
+		'output/benchmarks/{prefix}_inter30.tsv'
 	shell:
 		"""
 		cat {input.res} | awk -f ./scripts/stats_sub.awk > {output.inter30} 2>> {log.err}
