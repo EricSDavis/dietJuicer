@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import pandas as pd
+import glob
+
+##### Load config and sample sheets #####
+
+configfile: "config/config.yaml"
+
+samples = pd.read_table(config["samples"])
+
+onsuccess:
+	print("buildHIC completed successfully!")
+
+##### Define rules #####
+rule all:
+    input:
+        expand('output/{prefix}_{extension}', prefix=config['prefix'], extension=['inter.hic', 'inter_30.hic'])
+
+## Merge all merged_nodups.txt files found in mergeList
+rule mergedNoDups:
+    input:
+        samples["merged_nodups"].tolist()
+    output:
+        'output/{prefix}_merged_nodups.txt'
+    log:
+        err = 'output/logs/{prefix}_merged_nodups.err'
+    benchmark:
+        'output/benchmarks/{prefix}_merged_nodups.tsv'
+    threads: 8
+    shell:
+        """
+        tmp_dir=$(mktemp -d -p $PWD)
+        sort --parallel={threads} -T $tmp_dir -m -k2,2d -k6,6d {input} > {output} 2> {log.err}
+        rm -rf $tmp_dir
+        """
+
+## Create statistics files for MQ > 0
+rule inter:
+    input:
+        inter = samples["inter"].tolist(),
+        merged_nodups = rules.mergedNoDups.output
+    output:
+        inter = 'output/{prefix}_inter.txt',
+        hists = 'output/{prefix}_inter_hists.m'
+    log:
+        err = 'output/logs/{prefix}_inter.err'
+    benchmark:
+        'output/benchmarks/{prefix}_inter.tsv'
+    params:
+        ligation = config['ligation'],
+        site_file = config['site_file']
+    threads: 1
+    shell:
+        """
+        awk -f ./scripts/makemega_addstats.awk {input.inter} > {output.inter} 2> {log.err}
+        ./scripts/statistics.pl -q 1 -o {output.inter} -s {params.site_file} -l {params.ligation} {input.merged_nodups} 2>> {log.err}
+        """
+
+## Create statistics files for MP > 30
+rule inter30:
+    input:
+        inter30 = samples["inter30"].tolist(),
+        merged_nodups = rules.mergedNoDups.output
+    output:
+        inter30 = 'output/{prefix}_inter_30.txt',
+        hists30 = 'output/{prefix}_inter_30_hists.m'
+    log:
+        err = 'output/logs/{prefix}_inter30.err'
+    benchmark:
+        'output/benchmarks/{prefix}_inter30.tsv'
+    params:
+        ligation = config['ligation'],
+        site_file = config['site_file']
+    threads: 1
+    shell:
+        """
+        awk -f ./scripts/makemega_addstats.awk {input.inter30} > {output.inter30} 2> {log.err}
+        ./scripts/statistics.pl -q 30 -o {output.inter30} -s {params.site_file} -l {params.ligation} {input.merged_nodups} 2>> {log.err}
+        """
+
+## Create Hi-C maps file for MQ > 0
+rule hic:
+    input:
+        inter = rules.inter.output.inter,
+        hists = rules.inter.output.hists,
+        merged_nodups = rules.mergedNoDups.output
+    output:
+        hic = 'output/{prefix}_inter.hic'
+    log:
+        err = 'output/logs/{prefix}_hic.err',
+        out = 'output/logs/{prefix}_hic.out'
+    benchmark:
+        'output/benchmarks/{prefix}_hic.tsv'
+    params:
+        chromSizes = config['chromSizes']
+    threads: 1
+    shell:
+        """
+        ./scripts/juicer_tools pre -s {input.inter} -g {input.hists} -q 1 {input.merged_nodups} {output.hic} {params.chromSizes} 1> {log.out} 2> {log.err}
+        """
+
+## Create Hi-C maps file for MQ > 30
+rule hic30:
+    input:
+        inter30 = rules.inter30.output.inter30,
+        hists30 = rules.inter30.output.hists30,
+        merged_nodups = rules.mergedNoDups.output
+    output:
+        hic30 = 'output/{prefix}_inter_30.hic'
+    log:
+        err = 'output/logs/{prefix}_hic30.err',
+        out = 'output/logs/{prefix}_hic30.out'
+    benchmark:
+        'output/benchmarks/{prefix}_hic30.tsv'
+    params:
+        chromSizes = config['chromSizes']
+    threads: 1
+    shell:
+        """
+        ./scripts/juicer_tools pre -s {input.inter30} -g {input.hists30} -q 1 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
+        """

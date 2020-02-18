@@ -1,8 +1,8 @@
-## Location of Sample-sheet containing read paths
-samples: 'samples.txt'
+## Samplesheet or mergeList
+samples: 'samples.txt' #'samples.txt' #or mergeList.txt
 
 ## Prefix to add to each output file
-prefix: 'prefix'
+prefix: 'prefix' #'CI_THP1_A_1.1.1'
 
 ## Genome-specific reference parameters
 fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 

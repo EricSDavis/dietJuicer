@@ -19,7 +19,7 @@ mergedSort:
   memPerCpu: 8G
 
 hic:
-  memPerCpu: 8G
+  memPerCpu: 16G
 
 hic30:
-  memPerCpu: 8G
+  memPerCpu: 16G
