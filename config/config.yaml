@@ -1,5 +1,5 @@
 ## Samplesheet or mergeList
-samples: 'samples.txt' #'samples.txt' #or mergeList.txt
+samples: 'samples.txt' # 'samples.txt' or 'mergeList.txt'
 
 ## Prefix to add to each output file
 prefix: 'prefix' #'CI_THP1_A_1.1.1'
