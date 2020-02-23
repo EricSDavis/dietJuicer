@@ -55,13 +55,7 @@ else:
 ##### Define rules #####
 rule all:
     input:
-        [expand("output/{group}/{group}_countLigations_split{splitName}_{ext}", group=key, splitName=splitNames[key], ext=['temp', 'norm.txt.res.txt', 'linecount.txt']) for key in splitNames],
-        [expand("output/{group}/{group}_align_split{splitName}.sam", group=key, splitName=splitNames[key]) for key in splitNames],
         [expand("output/{group}/{group}_rmSplits_split{splitName}_removed.txt", group=key, splitName=splitNames[key]) for key in splitNames],
-        [expand("output/{group}/{group}_align_split{splitName}_{ext}", group=key, splitName=splitNames[key], ext=['norm.txt', 'norm.txt.res.txt', 'alignable.sam', 'collisions.sam', 'collisions_low_mapq.sam', 'unmapped.sam', 'mapq0.sam', 'unpaired.sam']) for key in splitNames],
-        [expand("output/{group}/{group}_fragment_split{splitName}.frag.txt", group=key, splitName=splitNames[key]) for key in splitNames],
-        [expand("output/{group}/{group}_sort_split{splitName}.sort.txt", group=key, splitName=splitNames[key]) for key in splitNames],
-        [expand("output/{group}/{group}_mergedSort_merged_sort.txt", group=key) for key in splitNames],
         [expand("output/{group}/{group}_dedup_{ext}", group=key, ext=['dups.txt', 'merged_nodups.txt', 'opt_dups.txt']) for key in splitNames],
         [expand("output/{group}/{group}_inter{ext}", group=key, ext=['.txt', '_hists.m', '.hic', '_30.txt', '_30_hists.m', '_30.hic']) for key in splitNames]
         
@@ -70,9 +64,9 @@ rule countLigations:
         R1 = lambda wildcards: ['output/{group}/splitsR1/{splitName}_R1.fastq.gz'.format(group=wildcards.group, splitName=wildcards.splitName)],
         R2 = lambda wildcards: ['output/{group}/splitsR2/{splitName}_R2.fastq.gz'.format(group=wildcards.group, splitName=wildcards.splitName)]
     output:
-        temp = 'output/{group}/{group}_countLigations_split{splitName}_temp',
-        res = 'output/{group}/{group}_countLigations_split{splitName}_norm.txt.res.txt',
-        linecount = 'output/{group}/{group}_countLigations_split{splitName}_linecount.txt'
+        temp = temp('output/{group}/{group}_countLigations_split{splitName}_temp'),
+        res = temp('output/{group}/{group}_countLigations_split{splitName}_norm.txt.res.txt'),
+        linecount = temp('output/{group}/{group}_countLigations_split{splitName}_linecount.txt')
     log:
         err = "output/{group}/logs/{group}_countLigations_split{splitName}.err",
         out = "output/{group}/logs/{group}_countLigations_split{splitName}.out"
@@ -89,7 +83,7 @@ rule align:
         R1 = lambda wildcards: ['output/{group}/splitsR1/{splitName}_R1.fastq.gz'.format(group=wildcards.group, splitName=wildcards.splitName)],
         R2 = lambda wildcards: ['output/{group}/splitsR2/{splitName}_R2.fastq.gz'.format(group=wildcards.group, splitName=wildcards.splitName)]
     output:
-        sam = "output/{group}/{group}_align_split{splitName}.sam"
+        sam = temp("output/{group}/{group}_align_split{splitName}.sam")
     log:
         err = "output/{group}/logs/{group}_align_split{splitName}.err"
     threads: 8
@@ -106,7 +100,7 @@ rule rmSplits:
         rules.countLigations.output,
         rules.align.output
     output:
-        'output/{group}/{group}_rmSplits_split{splitName}_removed.txt'
+        temp('output/{group}/{group}_rmSplits_split{splitName}_removed.txt')
     shell:
         """
         rm output/{wildcards.group}/splitsR1/{wildcards.splitName}_R1.fastq.gz output/{wildcards.group}/splitsR2/{wildcards.splitName}_R2.fastq.gz
@@ -117,14 +111,14 @@ rule chimera:
     input:
         sam = rules.align.output.sam
     output:
-        norm = "output/{group}/{group}_align_split{splitName}_norm.txt",
-        normRes = "output/{group}/{group}_align_split{splitName}_norm.txt.res.txt",
-        alignable = "output/{group}/{group}_align_split{splitName}_alignable.sam",
-        collisions = "output/{group}/{group}_align_split{splitName}_collisions.sam",
-        lowqcollisions = "output/{group}/{group}_align_split{splitName}_collisions_low_mapq.sam",
-        unmapped = "output/{group}/{group}_align_split{splitName}_unmapped.sam",
-        mapq0 = "output/{group}/{group}_align_split{splitName}_mapq0.sam",
-        unpaired = "output/{group}/{group}_align_split{splitName}_unpaired.sam"
+        norm = temp("output/{group}/{group}_align_split{splitName}_norm.txt"),
+        normRes = temp("output/{group}/{group}_align_split{splitName}_norm.txt.res.txt"),
+        alignable = temp("output/{group}/{group}_align_split{splitName}_alignable.sam"),
+        collisions = temp("output/{group}/{group}_align_split{splitName}_collisions.sam"),
+        lowqcollisions = temp("output/{group}/{group}_align_split{splitName}_collisions_low_mapq.sam"),
+        unmapped = temp("output/{group}/{group}_align_split{splitName}_unmapped.sam"),
+        mapq0 = temp("output/{group}/{group}_align_split{splitName}_mapq0.sam"),
+        unpaired = temp("output/{group}/{group}_align_split{splitName}_unpaired.sam")
     log:
         err = "output/{group}/logs/{group}_chimera_split{splitName}.err",
         out = "output/{group}/logs/{group}_chimera_split{splitName}.out"
@@ -142,7 +136,7 @@ rule fragment:
     input:
         norm = rules.chimera.output.norm
     output:
-        frag = "output/{group}/{group}_fragment_split{splitName}.frag.txt"
+        frag = temp("output/{group}/{group}_fragment_split{splitName}.frag.txt")
     log:
         err = "output/{group}/logs/{group}_fragment_split{splitName}.err"
     threads: 1
@@ -165,7 +159,7 @@ rule sort:
     input:
         rules.fragment.output.frag
     output:
-        sorted = "output/{group}/{group}_sort_split{splitName}.sort.txt"
+        sorted = temp("output/{group}/{group}_sort_split{splitName}.sort.txt")
     log:
         err = "output/{group}/logs/{group}_sort_split{splitName}.err"
     threads: 8
@@ -183,7 +177,7 @@ rule mergedSort:
     input:
         lambda wildcards: ['output/{group}/{group}_sort_split{splitName}.sort.txt'.format(group=wildcards.group, splitName=value) for value in splitNames[wildcards.group]]
     output:
-        'output/{group}/{group}_mergedSort_merged_sort.txt'
+        temp('output/{group}/{group}_mergedSort_merged_sort.txt')
     log:
         err = 'output/{group}/logs/{group}_mergedSort.err'
     threads: 8
@@ -201,9 +195,9 @@ rule dedup:
     input:
         rules.mergedSort.output
     output:
-        dups = "output/{group}/{group}_dedup_dups.txt",
+        dups = temp("output/{group}/{group}_dedup_dups.txt"),
         merged_nodups = "output/{group}/{group}_dedup_merged_nodups.txt",
-        optdups = "output/{group}/{group}_dedup_opt_dups.txt"
+        optdups = temp("output/{group}/{group}_dedup_opt_dups.txt")
     log:
         err = 'output/{group}/logs/{group}_dedup.err'
     params:
