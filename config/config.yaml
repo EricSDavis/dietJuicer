@@ -1,8 +1,8 @@
 ## Samplesheet or mergeList
-samples: 'samples.txt' # 'samples.txt' or 'mergeList.txt'
+samplesheet: 'samplesheets/samplesheet.txt' # 'samples.txt' or 'mergeList.txt'
 
-## Prefix to add to each output file
-prefix: 'prefix' #'CI_THP1_A_1.1.1'
+## List columns to group (i.e. any columns left out will become part of the same group)
+mergeBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
 
 ## Genome-specific reference parameters
 fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
@@ -14,7 +14,7 @@ site_file: 'restriction_sites/hg19_MboI_chr.txt' # Make sure chromosomes match b
 ligation: "GATCGATC"
 
 ## Set splitsize
-splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
+splitsize: 1000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
 
 ## Additional options
 mapq0_reads_included: 0

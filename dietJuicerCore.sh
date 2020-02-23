@@ -14,10 +14,10 @@ set -e
 module load python/3.6.6
 
 ## Create and activate virtual environment with requirements
-python3 -m venv env && source env/bin/activate && pip3 install -r requirements.txt
+python3 -m venv env && source env/bin/activate && pip3 install -r config/requirements.txt
 
 ## Make directory for slurm logs
-mkdir -p logs_slurm
+mkdir -p output/logs_slurm
 
 ## Execute splitFASTQ snakemake workflow
 snakemake -j 50 -p -s workflows/splitFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error} --parsable" --cluster-status ./scripts/status.py

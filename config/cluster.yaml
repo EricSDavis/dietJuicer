@@ -5,8 +5,8 @@ __default__:
   cpusPerTask: "{threads}" # -c
   memPerCpu: 4G # --mem-per-cpu
   nodes: 1
-  output: "logs_slurm/{rule}.{wildcards}.out"
-  error: "logs_slurm/{rule}.{wildcards}.err"
+  output: "output/logs_slurm/{rule}.{wildcards}.out"
+  error: "output/logs_slurm/{rule}.{wildcards}.err"
 
 ## Multi-threaded / High-memory Rules
 align:
