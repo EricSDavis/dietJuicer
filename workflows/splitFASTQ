@@ -39,15 +39,16 @@ rule splitR1:
         'output/{group}/splitR1_done.txt'
     params:
 	    splitsize = config['splitsize']
-    threads: 1
+    threads: 8
     benchmark:
-        'output/{group}/benchmarks/splitR1.tsv'
+        'output/{group}/benchmarks/{group}_splitR1.tsv'
     log:
-        err = 'output/{group}/logs/splitR1.err'
+        err = 'output/{group}/logs/{group}_splitR1.err'
     shell:
 	    """
+        module load pigz;
         mkdir -p output/{wildcards.group}/splitsR1;
-        gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='gzip > output/{wildcards.group}/splitsR1/$FILE.gz' 2> {log.err};
+        gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R1.fastq --filter='pigz -p {threads} > output/{wildcards.group}/splitsR1/$FILE.gz' 2> {log.err};
         ls -1 output/{wildcards.group}/splitsR1/ > {output} 2>> {log.err};
 	    """
 
@@ -58,14 +59,15 @@ rule splitR2:
         'output/{group}/splitR2_done.txt'
     params:
 	    splitsize = config['splitsize']
-    threads: 1
+    threads: 8
     benchmark:
-        'output/{group}/benchmarks/splitR2.tsv'
+        'output/{group}/benchmarks/{group}_splitR2.tsv'
     log:
-        err = 'output/{group}/logs/splitR2.err'
+        err = 'output/{group}/logs/{group}_splitR2.err'
     shell:
 	    """
+        module load pigz;
         mkdir -p output/{wildcards.group}/splitsR2;
-        gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='gzip > output/{wildcards.group}/splitsR2/$FILE.gz' 2> {log.err};
+        gunzip -c {input} | split -a 3 -l {params.splitsize} -d --additional-suffix=_R2.fastq --filter='pigz -p {threads} > output/{wildcards.group}/splitsR2/$FILE.gz' 2> {log.err};
         ls -1 output/{wildcards.group}/splitsR2/ > {output} 2>> {log.err};
 	    """

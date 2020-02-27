@@ -53,11 +53,11 @@ else:
     splitNames = dict()
 
 ##### Define rules #####
+localrules: rmSplits
+
 rule all:
     input:
-        [expand("output/{group}/{group}_rmSplits_split{splitName}_removed.txt", group=key, splitName=splitNames[key]) for key in splitNames],
-        [expand("output/{group}/{group}_dedup_{ext}", group=key, ext=['dups.txt', 'merged_nodups.txt', 'opt_dups.txt']) for key in splitNames],
-        [expand("output/{group}/{group}_inter{ext}", group=key, ext=['.txt', '_hists.m', '.hic', '_30.txt', '_30_hists.m', '_30.hic']) for key in splitNames]
+        [expand("output/{group}/{group}_dedup_merged_nodups.txt.gz", group=key) for key in splitNames]
         
 rule countLigations:
     input:
@@ -109,7 +109,8 @@ rule rmSplits:
 
 rule chimera:
     input:
-        sam = rules.align.output.sam
+        sam = rules.align.output.sam,
+        rmsplits = rules.rmSplits.output
     output:
         norm = temp("output/{group}/{group}_align_split{splitName}_norm.txt"),
         normRes = temp("output/{group}/{group}_align_split{splitName}_norm.txt.res.txt"),
@@ -196,7 +197,7 @@ rule dedup:
         rules.mergedSort.output
     output:
         dups = temp("output/{group}/{group}_dedup_dups.txt"),
-        merged_nodups = "output/{group}/{group}_dedup_merged_nodups.txt",
+        merged_nodups = temp("output/{group}/{group}_dedup_merged_nodups.txt"),
         optdups = temp("output/{group}/{group}_dedup_opt_dups.txt")
     log:
         err = 'output/{group}/logs/{group}_dedup.err'
@@ -301,5 +302,23 @@ rule hic30:
         'output/{group}/benchmarks/{group}_hic30.tsv'
     shell:
         """
-        ./scripts/juicer_tools pre -s {input.inter30} -g {input.hists30} -q 1 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
+        ./scripts/juicer_tools pre -s {input.inter30} -g {input.hists30} -q 30 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
+        """
+
+rule compress:
+    input:
+        hic = rules.hic.output.hic, 
+        hic30 = rules.hic30.output.hic30,
+        merged_nodups = rules.dedup.output.merged_nodups
+    output:
+        'output/{group}/{group}_dedup_merged_nodups.txt.gz'
+    log:
+        err = 'output/{group}/logs/{group}_compress.err'
+    threads: 8
+    benchmark:
+        'output/{group}/benchmarks/{group}_compress.tsv'
+    shell:
+        """
+        module load pigz
+        pigz -p {threads} {input.merged_nodups}
         """
