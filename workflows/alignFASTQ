@@ -119,7 +119,8 @@ rule chimera:
         lowqcollisions = temp("output/{group}/{group}_align_split{splitName}_collisions_low_mapq.sam"),
         unmapped = temp("output/{group}/{group}_align_split{splitName}_unmapped.sam"),
         mapq0 = temp("output/{group}/{group}_align_split{splitName}_mapq0.sam"),
-        unpaired = temp("output/{group}/{group}_align_split{splitName}_unpaired.sam")
+        unpaired = temp("output/{group}/{group}_align_split{splitName}_unpaired.sam"),
+        done = temp("output/{group}/{group}_chimera_split{splitName}_done.txt")
     log:
         err = "output/{group}/logs/{group}_chimera_split{splitName}.err",
         out = "output/{group}/logs/{group}_chimera_split{splitName}.out"
@@ -129,12 +130,16 @@ rule chimera:
         mapq0_reads_included = config['mapq0_reads_included']
     benchmark: 
         'output/{group}/benchmarks/{group}_chimera_split{splitName}.tsv'
-    run:
-        shell('touch {output}')
-        shell('gawk -v "fname"={params.fname} -v "mapq0_reads_included"={params.mapq0_reads_included} -f ./scripts/chimeric_blacklist.awk {input.sam} 2> {log.err} 1> {log.out}')
+    shell:
+        """
+        touch {output.norm} {output.normRes} {output.alignable} {output.collisions} {output.lowqcollisions} {output.unmapped} {output.mapq0} {output.unpaired}
+        gawk -v "fname"={params.fname} -v "mapq0_reads_included"={params.mapq0_reads_included} -f ./scripts/chimeric_blacklist.awk {input.sam} 2> {log.err} 1> {log.out} && \
+        touch {output.done}
+        """
 
 rule fragment:
     input:
+        done = rules.chimera.output.done,
         norm = rules.chimera.output.norm
     output:
         frag = temp("output/{group}/{group}_fragment_split{splitName}.frag.txt")
@@ -198,7 +203,8 @@ rule dedup:
     output:
         dups = temp("output/{group}/{group}_dedup_dups.txt"),
         merged_nodups = temp("output/{group}/{group}_dedup_merged_nodups.txt"),
-        optdups = temp("output/{group}/{group}_dedup_opt_dups.txt")
+        optdups = temp("output/{group}/{group}_dedup_opt_dups.txt"),
+        done = temp('output/{group}/{group}_dedup_done.txt')
     log:
         err = 'output/{group}/logs/{group}_dedup.err'
     params:
@@ -206,9 +212,12 @@ rule dedup:
     threads: 1
     benchmark:
         'output/{group}/benchmarks/{group}_dedup.tsv'
-    run:
-        shell('touch {output}'),
-        shell('awk -f ./scripts/dups.awk -v name={params.name} {input} 2> {log.err}')
+    shell:
+        """
+        touch {output.dups} {output.merged_nodups} {output.optdups}
+        awk -f ./scripts/dups.awk -v name={params.name} {input} 2> {log.err} && \
+        touch {output.done}
+        """
 
 def interInput(wildcards):
     combined=[]
@@ -219,6 +228,7 @@ def interInput(wildcards):
 
 rule inter:
     input:
+        done = rules.dedup.output.done,
         res = interInput,
         dups = rules.dedup.output.dups,
         optdups = rules.dedup.output.optdups,
@@ -243,6 +253,7 @@ rule inter:
 
 rule inter30:
     input:
+        done = rules.dedup.output.done,
         res = interInput,
         dups = rules.dedup.output.dups,
         optdups = rules.dedup.output.optdups,
@@ -267,6 +278,7 @@ rule inter30:
 
 rule hic:
     input:
+        done = rules.dedup.output.done,
         inter = rules.inter.output.inter,
         hists = rules.inter.output.hists,
         merged_nodups = rules.dedup.output.merged_nodups
@@ -287,6 +299,7 @@ rule hic:
 
 rule hic30:
     input:
+        done = rules.dedup.output.done,
         inter30 = rules.inter30.output.inter30,
         hists30 = rules.inter30.output.hists30,
         merged_nodups = rules.dedup.output.merged_nodups
@@ -307,6 +320,7 @@ rule hic30:
 
 rule compress:
     input:
+        done = rules.dedup.output.done,
         hic = rules.hic.output.hic, 
         hic30 = rules.hic30.output.hic30,
         merged_nodups = rules.dedup.output.merged_nodups
