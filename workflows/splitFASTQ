@@ -30,13 +30,13 @@ read2 = samples.groupby('id')['Read2'].apply(list).to_dict()
 ##### Define rules #####
 rule all:
     input:
-        [expand("output/{group}/split{R}_done.txt", group=key, R=['R1', 'R2']) for key in read1]
+        [expand("output/{group}/{group}_split{R}_done.txt", group=key, R=['R1', 'R2']) for key in read1]
 
 rule splitR1:
     input:
         lambda wildcards: read1.get(wildcards.group)
     output:
-        'output/{group}/splitR1_done.txt'
+        'output/{group}/{group}_splitR1_done.txt'
     params:
 	    splitsize = config['splitsize']
     threads: 8
@@ -56,7 +56,7 @@ rule splitR2:
     input:
         lambda wildcards: read2.get(wildcards.group)
     output:
-        'output/{group}/splitR2_done.txt'
+        'output/{group}/{group}_splitR2_done.txt'
     params:
 	    splitsize = config['splitsize']
     threads: 8

@@ -31,7 +31,7 @@ read2 = samples.groupby('id')['Read2'].apply(list).to_dict()
 ## Build {group:splitName} dictionary for read1 from completed split file (i.e. 'output/{group}/splitR1_done.txt')
 splitRead1 = dict()
 for i in read1.keys():
-    filename1 = os.path.join('output', i, 'splitR1_done.txt')
+    filename1 = os.path.join('output', i, '{}_splitR1_done.txt'.format(i))
     with open(filename1) as f:
         split1 = f.read().splitlines()
         splitNames1 = [j[0:4] for j in split1]
@@ -40,7 +40,7 @@ for i in read1.keys():
 ## Build {group:splitName} dictionary for read2 from completed split file (i.e. 'output/{group}/splitR2_done.txt')
 splitRead2 = dict()
 for i in read2.keys():
-    filename2 = os.path.join('output', i, 'splitR2_done.txt')
+    filename2 = os.path.join('output', i, '{}_splitR2_done.txt'.format(i))
     with open(filename2) as f:
         split2 = f.read().splitlines()
         splitNames2 = [j[0:4] for j in split2]
