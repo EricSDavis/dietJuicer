@@ -20,10 +20,10 @@ python3 -m venv env && source env/bin/activate && pip3 install -r config/require
 mkdir -p output/logs_slurm
 
 ## Execute splitFASTQ snakemake workflow
-snakemake -j 100 -p -s workflows/splitFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error} --parsable" --cluster-status ./scripts/status.py
+snakemake -j 100 --nolock --rerun-incomplete --restart-times 3 -p -s workflows/splitFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error} --parsable" --cluster-status ./scripts/status.py
 
 ## Execute alignFASTQ snakemake workflow
-snakemake -j 100 -p -s workflows/alignFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error} --parsable" --cluster-status ./scripts/status.py
+snakemake -j 100 --nolock --rerun-incomplete --restart-times 3 -p -s workflows/alignFASTQ --latency-wait 500 --cluster-config "config/cluster.yaml" --cluster "sbatch -J {cluster.name} -p {cluster.partition} -t {cluster.time} -c {cluster.cpusPerTask} --mem-per-cpu={cluster.memPerCpu} -N {cluster.nodes} --output {cluster.output} --error {cluster.error} --parsable" --cluster-status ./scripts/status.py
 
 ## Success message
 echo "Entire workflow completed successfully!"
