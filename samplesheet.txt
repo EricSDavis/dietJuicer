@@ -1,0 +1,17 @@
+Project	Cell_Type	Genotype	Bio_Rep	Tech_Rep	Seq_Rep	Read1	Read2	Sequencing_Directory	merged_nodups	inter	inter30
+PROJ	CELL	WT	1	1	1	sample1_R1.fq.gz	sample1_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	2	1	1	sample2_R1.fq.gz	sample2_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	3	1	1	sample3_R1.fq.gz	sample3_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	4	1	1	sample4_R1.fq.gz	sample4_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	1	1	1	sample5_R1.fq.gz	sample5_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	2	1	1	sample6_R1.fq.gz	sample6_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	3	1	1	sample7_R1.fq.gz	sample7_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	4	1	1	sample8_R1.fq.gz	sample8_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	1	1	2	sample9_R1.fq.gz	sample9_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	2	1	2	sample10_R1.fq.gz	sample10_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	3	1	2	sample11_R1.fq.gz	sample11_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	WT	4	1	2	sample12_R1.fq.gz	sample12_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	1	1	2	sample13_R1.fq.gz	sample13_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	2	1	2	sample14_R1.fq.gz	sample14_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	3	1	2	sample15_R1.fq.gz	sample15_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt
+PROJ	CELL	MUT	4	1	2	sample16_R1.fq.gz	sample16_R2.fq.gz	/path/to/fastq/directory/	/path/to/merged_nodups.txt.gz	/path/to/inter.txt	/path/to/inter_30.txt

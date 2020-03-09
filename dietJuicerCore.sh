@@ -1,6 +1,6 @@
 #! /bin/bash -login
 #SBATCH -J scheduler
-#SBATCH -t 7-00:00:00
+#SBATCH -t 10-00:00:00
 #SBATCH -N 1
 #SBATCH -n 1
 #SBATCH -c 1  

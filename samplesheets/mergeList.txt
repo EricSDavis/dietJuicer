@@ -1,3 +1,0 @@
-inter	inter30	merged_nodups
-/path/to/run1/output/{prefix}_inter.txt	/path/to/run1/output/{prefix}_inter_30.txt	/path/to/run1/output/{prefix}_dedup_merged_nodups.txt
-/path/to/run2/output/{prefix}_inter.txt	/path/to/run2/output/{prefix}_inter_30.txt	/path/to/run2/output/{prefix}_dedup_merged_nodups.txt

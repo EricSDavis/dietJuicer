@@ -1,2 +1,0 @@
-Read1	Read2
-reads/sample1_R1.fastq.gz	reads/sample1_R2.fastq.gz
