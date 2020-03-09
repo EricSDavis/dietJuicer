@@ -86,11 +86,11 @@ output/
 ├── logs_slurm
 └── {group}
    ├── benchmarks
-   │   ├──	{group}_{rule}_split{splitName}.tsv
-   │   └──  ... 
+   │   ├── {group}_{rule}_split{splitName}.tsv
+   │   └── ... 
    ├── logs
-   │   ├──	{group}_{rule}_split{splitName}.err
-   │   └──  ... 
+   │   ├── {group}_{rule}_split{splitName}.err
+   │   └── ... 
    ├── {group}_dedup_merged_nodups.txt.gz
    ├── {group}_inter_30.hic
    ├── {group}_inter_30_hists.m
@@ -101,11 +101,11 @@ output/
    ├── {group}_splitR1_done.txt
    ├── {group}_splitR2_done.txt
    ├── splitsR1
-   │   ├──	{splitName}_R1.fastq.gz -- removed
-   │   └──  ... 
+   │   ├── {splitName}_R1.fastq.gz -- removed
+   │   └── ... 
    └── splitsR2
-       ├──	{splitName}_R2.fastq.gz -- removed
-       └──  ... 
+       ├── {splitName}_R2.fastq.gz -- removed
+       └── ... 
 ```
 
 These files can be used as input for creating combined `.hic` maps (see "Creating a Hi-C Map").
