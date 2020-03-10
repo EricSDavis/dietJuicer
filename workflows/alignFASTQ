@@ -16,9 +16,9 @@ samples = pd.read_table(config["samplesheet"])
 ## Convert all columns to strings
 samples = samples.astype(str)
 
-## Concatenate the sequencing directory to Read1 and Read1 for full paths
-samples['Read1'] = samples['Sequencing_Directory'] + samples['Read1']
-samples['Read2'] = samples['Sequencing_Directory'] + samples['Read2']
+## Concatenate the sequencing directory to Read1 and Read2 for full paths
+samples['Read1'] = samples[['Sequencing_Directory', 'Read1']].apply(lambda row: os.path.join(*row), axis=1)
+samples['Read2'] = samples[['Sequencing_Directory', 'Read2']].apply(lambda row: os.path.join(*row), axis=1)
 
 ## Concatenate columns to identify which groups to run (i.e. Seq_Rep will be run together)
 samples['id'] = samples[config['mergeBy']].agg('_'.join, axis=1)
