@@ -12,7 +12,7 @@ for d in dirs:
     files = glob.glob(os.path.join('output', d, 'benchmarks', '*.tsv'))
     tables = list()
     for f in files:
-        table = pd.read_table(f)
+        table = pd.read_csv(f, sep="\t")
         id = os.path.splitext(os.path.basename(f))[0]
         table['sample'] = d
         table['rule'] = id.replace(d+'_', '')
@@ -34,4 +34,5 @@ agg = df.groupby(['sample', 'rule']).agg('max') ## For some reason this looks ni
 ## Convert seconds to hh:mm:ss
 agg['s'] = agg['s'].apply(convert)
 
-agg
+## Write out as tsv
+agg.to_csv("benchmarking.tsv", sep="\t")
