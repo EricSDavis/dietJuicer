@@ -65,7 +65,8 @@ rule mergedNoDups:
 rule inter:
     input:
         inter = lambda wildcards: int1[wildcards.group],
-        merged_nodups = rules.mergedNoDups.output.merged_nodups
+        merged_nodups = rules.mergedNoDups.output.merged_nodups,
+        merged_nodups_done = rules.mergedNoDups.output.done
     output:
         inter = 'output/{group}/{group}_inter.txt',
         hists = 'output/{group}/{group}_inter_hists.m',
@@ -89,7 +90,8 @@ rule inter:
 rule inter30:
     input:
         inter30 = lambda wildcards: int30[wildcards.group],
-        merged_nodups = rules.mergedNoDups.output.merged_nodups
+        merged_nodups = rules.mergedNoDups.output.merged_nodups,
+        merged_nodups_done = rules.mergedNoDups.output.done
     output:
         inter30 = 'output/{group}/{group}_inter_30.txt',
         hists30 = 'output/{group}/{group}_inter_30_hists.m',
@@ -113,8 +115,10 @@ rule inter30:
 rule hic:
     input:
         inter = rules.inter.output.inter,
+        inter_done = rules.inter.output.done,
         hists = rules.inter.output.hists,
-        merged_nodups = rules.mergedNoDups.output.merged_nodups
+        merged_nodups = rules.mergedNoDups.output.merged_nodups,
+        merged_nodups_done = rules.mergedNoDups.output.done
     output:
         hic = 'output/{group}/{group}_inter.hic'
     log:
@@ -134,8 +138,10 @@ rule hic:
 rule hic30:
     input:
         inter30 = rules.inter30.output.inter30,
+        inter30_done = rules.inter30.output.done,
         hists30 = rules.inter30.output.hists30,
-        merged_nodups = rules.mergedNoDups.output.merged_nodups
+        merged_nodups = rules.mergedNoDups.output.merged_nodups,
+        merged_nodups_done = rules.mergedNoDups.output.done
     output:
         hic30 = 'output/{group}/{group}_inter_30.hic'
     log:
