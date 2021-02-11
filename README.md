@@ -215,3 +215,37 @@ See the diagram below for a DAG representation of the workflow:
 ## Setup & Dependencies
 
 `dietJuicer` uses snakemake version 5.10.0. See `requirements.txt` file for a list of python dependencies. Using the shell scripts to launch `dietJuicer` in a cluster setting will automatically run the pipeline in a python virtual environment with the required dependencies.
+
+## Troubleshooting
+
+Occasionally the pipeline may fail or terminate prematurely. Usually this is due either to a misspecification of job resources (such as insufficient memory, or too short of a runtime) or to changes in the UNC longleaf cluster. You can check the progress of your `dietJuicer` run by viewing the outfile (e.g. `dietJuicerCore-<JOBID>.out`). Errored jobs will be reported in this log file, as it collects the output from all steps in the pipeline. For more specific information on the error, navigate to `output/logs_slurm` and `output/{group}/logs`.
+
+One of the good things about `dietJuicer` is that since it is written using `snakemake`, it will automatically pick up the pipeline right where it left off. So there is no "wasted" time having to restart a stalled pipeline from scratch.
+
+If the error is caused by a misspecification of resources, the user can adjust the resource for the jobs in question by editing the `config/cluster.yaml` file. While the default values may serve most situations, running particularly large datasets may require some adjustment. Benchmarking successful runs using the `scripts/benchmarking.py` script can provide an idea of the computational resources required by different steps in the pipeline, given a particular filesize.
+
+If the error is due to job scheduler errors (e.g. `slurm` on UNC's longleaf cluster), recognizable by `sacct` or other `slurm` references in the  dietJuicer-out file, then no changes need to be made to the pipeline. Carry out the following steps to get the pipeline back to processing from where it left off:
+
+1. Unlock the directory:
+
+    ```bash
+    ./unlock.sh
+    ```
+    `snakemake` automatically locks directories to prevent accidental overwrites of files and to prevent multiple incarnations of the program from writing to the same files. The `unlock.sh` script unlocks the directory using the correct version of snakemake by activating the python virtual environment.
+
+2. Relaunch the pipeline:
+
+    For dietJuicerCore:
+    ```bash
+    sbatch dietJuicerCore.sh
+    ```
+
+    For dietJuicerMerge:
+    ```bash
+    sbatch dietJuicerMerge.sh
+    ```
+    You should see jobs begin to relaunch within ~1 min after invoking this command.
+
+One caveat is that the pipeline will not automatically remove some unneeded files if it was relaunched. Therefore, users may need to manually delete some of the excess intermediate files (those not listed as outputs above).
+
+If an error persists after taking these steps, it is possible that there is an error in the pipeline. Please document and report these occurances under the `issues` github page.
