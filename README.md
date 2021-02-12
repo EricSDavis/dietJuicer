@@ -228,8 +228,17 @@ If the error is due to job scheduler errors (e.g. `slurm` on UNC's longleaf clus
 
 1. Unlock the directory:
 
+    For a failed `dietJuicerCore` workflow use the unlock script with either "alignFASTQ", "dietJuicerCore" or "Core" as the first argument:
+
     ```bash
-    ./unlock.sh
+    ./unlock.sh alignFASTQ
+    ```
+    If the workflow failed during splitting (an unlikely scenario) - then create a new folder and start the run again from scratch.
+
+    For a failed `dietJuicerMerge` workflow use the unlock script with either "buildHIC", "dietJuicerMerge" or "Core" as the first argument:
+
+    ```bash
+    ./unlock.sh buildHIC
     ```
     `snakemake` automatically locks directories to prevent accidental overwrites of files and to prevent multiple incarnations of the program from writing to the same files. The `unlock.sh` script unlocks the directory using the correct version of snakemake by activating the python virtual environment.
 
