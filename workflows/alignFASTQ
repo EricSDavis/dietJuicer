@@ -57,8 +57,9 @@ localrules: rmSplits
 
 rule all:
     input:
-        [expand("output/{group}/{group}_dedup_merged_nodups.txt.gz", group=key) for key in splitNames]
-        
+        [expand("output/{group}/{group}_dedup_merged_nodups.txt.gz", group=key) for key in splitNames],
+        [expand("output/{group}/{group}_dietJuicerComplete.txt", group=key) for key in splitNames]
+      
 rule countLigations:
     input:
         R1 = lambda wildcards: ['output/{group}/splitsR1/{splitName}_R1.fastq.gz'.format(group=wildcards.group, splitName=wildcards.splitName)],
@@ -95,22 +96,9 @@ rule align:
         "module load bwa; "
         "bwa mem -SP5M -t {threads} {params.fasta} {input.R1} {input.R2} > {output.sam} 2> {log.err}"
 
-rule rmSplits:
-    input:
-        rules.countLigations.output,
-        rules.align.output
-    output:
-        temp('output/{group}/{group}_rmSplits_split{splitName}_removed.txt')
-    shell:
-        """
-        rm output/{wildcards.group}/splitsR1/{wildcards.splitName}_R1.fastq.gz output/{wildcards.group}/splitsR2/{wildcards.splitName}_R2.fastq.gz
-        touch {output}
-        """
-
 rule chimera:
     input:
-        sam = rules.align.output.sam,
-        rmsplits = rules.rmSplits.output
+        sam = rules.align.output.sam
     output:
         norm = temp("output/{group}/{group}_align_split{splitName}_norm.txt"),
         normRes = temp("output/{group}/{group}_align_split{splitName}_norm.txt.res.txt"),
@@ -335,4 +323,25 @@ rule compress:
         """
         module load pigz
         pigz -p {threads} {input.merged_nodups}
+        """
+
+rule rmSplits:
+    input:
+        rules.compress.output
+    output:
+        temp('output/{group}/{group}_rmSplits_split{splitName}_removed.txt')
+    shell:
+        """
+        rm output/{wildcards.group}/splitsR1/{wildcards.splitName}_R1.fastq.gz output/{wildcards.group}/splitsR2/{wildcards.splitName}_R2.fastq.gz
+        touch {output}
+        """
+
+rule pipelineComplete:
+    input:
+        rules.rmSplits.output
+    output:
+        'output/{group}/{group}_dietJuicerComplete.txt'
+    shell:
+        """
+        touch {output}
         """
