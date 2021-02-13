@@ -3,11 +3,9 @@
 
 import pandas as pd
 import glob
+import shutil
 
 ##### Load config and sample sheets #####
-onsuccess:
-	print("alignFASTQ completed successfully!")
-
 configfile: "config/config.yaml"
 
 ## Read in samplesheet
@@ -52,13 +50,24 @@ if splitRead1 == splitRead2:
 else:
     splitNames = dict()
 
-##### Define rules #####
-localrules: rmSplits
+## Define actions on success
+onsuccess:
+    ## Success message
+    print("alignFASTQ completed successfully!")
 
+    ## Remove split files and folders
+    for key in splitNames:
+        shutil.rmtree(os.path.join('output', key, 'splitsR1'))
+        shutil.rmtree(os.path.join('output', key, 'splitsR2'))
+        os.remove(os.path.join('output', key, '{group}_splitR1_done.txt'.format(group=key)))
+        os.remove(os.path.join('output', key, '{group}_splitR2_done.txt'.format(group=key)))
+        print("output/{group}/splitsR1 and output/{group}/splitsR2 have been removed".format(group=key))
+
+
+##### Define rules #####
 rule all:
     input:
-        [expand("output/{group}/{group}_dedup_merged_nodups.txt.gz", group=key) for key in splitNames],
-        [expand("output/{group}/{group}_dietJuicerComplete.txt", group=key) for key in splitNames]
+        [expand("output/{group}/{group}_dedup_merged_nodups.txt.gz", group=key) for key in splitNames]
       
 rule countLigations:
     input:
@@ -323,25 +332,4 @@ rule compress:
         """
         module load pigz
         pigz -p {threads} {input.merged_nodups}
-        """
-
-rule rmSplits:
-    input:
-        rules.compress.output
-    output:
-        temp('output/{group}/{group}_rmSplits_split{splitName}_removed.txt')
-    shell:
-        """
-        rm output/{wildcards.group}/splitsR1/{wildcards.splitName}_R1.fastq.gz output/{wildcards.group}/splitsR2/{wildcards.splitName}_R2.fastq.gz
-        touch {output}
-        """
-
-rule pipelineComplete:
-    input:
-        rules.rmSplits.output
-    output:
-        'output/{group}/{group}_dietJuicerComplete.txt'
-    shell:
-        """
-        touch {output}
         """
