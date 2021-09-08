@@ -216,6 +216,41 @@ See the diagram below for a DAG representation of the workflow:
 
 `dietJuicer` uses snakemake version 5.10.0. See `requirements.txt` file for a list of python dependencies. Using the shell scripts to launch `dietJuicer` in a cluster setting will automatically run the pipeline in a python virtual environment with the required dependencies.
 
+## Quality Check 
+
+After `dietJuicer` successfully runs, you can check the quality of your samples by looking at each `inter_30.txt` file. Instead of looking at each individual file, you can run the the `/scripts/juicerSummary.R` script to create a single file that contains all of the information from each `inter_30.txt` file. From the cloned directory, carry out the following steps: 
+
+1. Load R module:
+
+    ```bash
+    module add r
+    ```
+
+2. Launch the script:
+
+    ```bash
+    Rscript ./scripts/juicerSummary.R
+    ```
+
+The script will generate a file `juicerSummary.txt` in the directory from which it was launched that contains 29 rows and as many columns as `inter_30.txt` files found. 
+
+
+If you are interested in seeing how long certain steps took on a successful `dietJuicer` run, you can run the `scripts/benchmarking.py` script by carrying out the following steps: 
+
+1. Load python module: 
+
+    ```bash
+    module add python
+    ```
+    
+2. Launch the script: 
+
+    ```bash
+    python ./scripts/benchmarking.py
+    ```
+
+This script will generate a file `benchmarking.tsv` in the directory from which it was launched that provides valuable information about the computational resources/runtime required by different steps in the pipeline. 
+
 ## Troubleshooting
 
 Occasionally the pipeline may fail or terminate prematurely. Usually this is due either to a misspecification of job resources (such as insufficient memory, or too short of a runtime) or to changes in the UNC longleaf cluster. You can check the progress of your `dietJuicer` run by viewing the outfile (e.g. `dietJuicerCore-<JOBID>.out`). Errored jobs will be reported in this log file, as it collects the output from all steps in the pipeline. For more specific information on the error, navigate to `output/logs_slurm` and `output/{group}/logs`.
