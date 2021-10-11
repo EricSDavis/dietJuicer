@@ -199,6 +199,6 @@ rule norm:
     shell:
         """
         export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
-        java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar addNorm {input.hic} 1> {log.out} 2> {log.err}
+        java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar addNorm {input.hic30} 1> {log.out} 2> {log.err}
         touch {output.done}
         """
