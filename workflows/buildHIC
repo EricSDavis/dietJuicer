@@ -128,11 +128,11 @@ rule hic:
         'output/{group}/benchmarks/{group}_hic.tsv'
     params:
         chromSizes = config['chromSizes'],
-	javaMem = config['javaMem']
+        javaMem = config['javaMem']
     threads: 1
     shell:
         """
-	export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
         java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar pre -n -s {input.inter} -g {input.hists} -q 1 {input.merged_nodups} {output.hic} {params.chromSizes} 1> {log.out} 2> {log.err}
         """
 
@@ -153,11 +153,11 @@ rule hic30:
         'output/{group}/benchmarks/{group}_hic30.tsv'
     params:
         chromSizes = config['chromSizes'],
-	javaMem = config['javaMem']
+        javaMem = config['javaMem']
     threads: 1
     shell:
         """
-	export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
         java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar pre -n -s {input.inter30} -g {input.hists30} -q 30 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
         """
 	
@@ -177,9 +177,9 @@ rule norm:
     threads: 1
     shell:
         """
-	export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
         java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar addNorm {input.hic} 1> {log.out} 2> {log.err}
-	touch {output.done}
+        touch {output.done}
         """
 	
 ## Create normalizations for MQ > 30
@@ -198,7 +198,7 @@ rule norm:
     threads: 1
     shell:
         """
-	export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
         java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar addNorm {input.hic} 1> {log.out} 2> {log.err}
-	touch {output.done}
+        touch {output.done}
         """
