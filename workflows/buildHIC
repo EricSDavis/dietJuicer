@@ -183,7 +183,7 @@ rule norm:
         """
 	
 ## Create normalizations for MQ > 30
-rule norm:
+rule norm30:
     input:
         hic30 = rules.hic30.output.hic30
     output:
