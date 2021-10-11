@@ -16,5 +16,8 @@ ligation: "GATCGATC"
 ## Set splitsize
 splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
 
+## Java memory for buildHiC (hic/norm rules)
+javaMem: "250880"
+
 ## Additional options
 mapq0_reads_included: 0
