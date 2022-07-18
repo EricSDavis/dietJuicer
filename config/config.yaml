@@ -6,7 +6,7 @@ mergeBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
 
 ## Genome-specific reference parameters
 fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
-chromSizes: '/proj/phanstiel_lab/software/resources/hg19_chromSizes.txt'
+chromSizes: '/proj/phanstiel_lab/References/chromSizes/hg19_chromSizes.txt'
 
 ## Restriction site information
 site: "MboI" # or 'none'
