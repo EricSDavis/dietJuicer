@@ -59,6 +59,9 @@ Like `juicer`, but without all those calories
 
     ## Set splitsize
     splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
+    
+    ## Java memory for buildHiC (hic/norm rules)
+    javaMem: "250880"
 
     ## Additional options
     mapq0_reads_included: 0
@@ -165,6 +168,9 @@ A Hi-C map can be created by running `dietJuicerCore` (see "Quickstart") or by c
 
     ## Set splitsize
     splitsize: 200000000 ## 200000000 good default (50M reads/file) (i.e. 4000000 = 1M reads/file) 
+    
+    ## Java memory for buildHiC (hic/norm rules)
+    javaMem: "250880"
 
     ## Additional options
     mapq0_reads_included: 0
