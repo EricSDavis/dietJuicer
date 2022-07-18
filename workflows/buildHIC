@@ -36,7 +36,7 @@ for key in groups:
 ##### Define rules #####
 rule all:
     input:
-        expand('output/{group}/{group}_inter{ext}', group=groups, ext=['.hic', '_30.hic'])
+        expand('output/{group}/{group}_norm{ext}', group=groups, ext=['_done.txt', '30_done.txt'])
 
 ## Merge all merged_nodups.txt files found in mergeList
 rule mergedNoDups:
@@ -127,11 +127,13 @@ rule hic:
     benchmark:
         'output/{group}/benchmarks/{group}_hic.tsv'
     params:
-        chromSizes = config['chromSizes']
+        chromSizes = config['chromSizes'],
+        javaMem = config['javaMem']
     threads: 1
     shell:
         """
-        ./scripts/juicer_tools pre -s {input.inter} -g {input.hists} -q 1 {input.merged_nodups} {output.hic} {params.chromSizes} 1> {log.out} 2> {log.err}
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar pre -n -s {input.inter} -g {input.hists} -q 1 {input.merged_nodups} {output.hic} {params.chromSizes} 1> {log.out} 2> {log.err}
         """
 
 ## Create Hi-C maps file for MQ > 30
@@ -150,9 +152,53 @@ rule hic30:
     benchmark:
         'output/{group}/benchmarks/{group}_hic30.tsv'
     params:
-        chromSizes = config['chromSizes']
+        chromSizes = config['chromSizes'],
+        javaMem = config['javaMem']
     threads: 1
     shell:
         """
-        ./scripts/juicer_tools pre -s {input.inter30} -g {input.hists30} -q 30 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar pre -n -s {input.inter30} -g {input.hists30} -q 30 {input.merged_nodups} {output.hic30} {params.chromSizes} 1> {log.out} 2> {log.err}
+        """
+	
+## Create normalizations for MQ > 0
+rule norm:
+    input:
+        hic = rules.hic.output.hic
+    output:
+        done = 'output/{group}/{group}_norm_done.txt'
+    log:
+        err = 'output/{group}/logs/{group}_norm.err',
+        out = 'output/{group}/logs/{group}_norm.out'
+    benchmark:
+        'output/{group}/benchmarks/{group}_norm.tsv'
+    params:
+        javaMem = config['javaMem']
+    threads: 1
+    shell:
+        """
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar addNorm {input.hic} 1> {log.out} 2> {log.err}
+        touch {output.done}
+        """
+	
+## Create normalizations for MQ > 30
+rule norm30:
+    input:
+        hic30 = rules.hic30.output.hic30
+    output:
+        done = 'output/{group}/{group}_norm30_done.txt'
+    log:
+        err = 'output/{group}/logs/{group}_norm30.err',
+        out = 'output/{group}/logs/{group}_norm30.out'
+    benchmark:
+        'output/{group}/benchmarks/{group}_norm.tsv'
+    params:
+        javaMem = config['javaMem']
+    threads: 1
+    shell:
+        """
+        export IBM_JAVA_OPTIONS="-Xmx{params.javaMem}m -Xgcthreads1"
+        java -Djava.awt.headless=true -Djava.library.path=/lib64 -Xms{params.javaMem}m -Xmx{params.javaMem}m -jar ./scripts/juicer_tools.jar addNorm {input.hic30} 1> {log.out} 2> {log.err}
+        touch {output.done}
         """

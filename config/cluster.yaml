@@ -19,7 +19,17 @@ mergedSort:
   memPerCpu: 8G
 
 hic:
-  memPerCpu: 16G
+  memPerCpu: 260G
+  time: 10080
 
 hic30:
-  memPerCpu: 16G
+  memPerCpu: 260G
+  time: 10080
+  
+norm:
+  memPerCpu: 260G
+  time: 10080
+  
+norm30:
+  memPerCpu: 260G
+  time: 10080
