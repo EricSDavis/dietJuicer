@@ -39,14 +39,14 @@ Like `juicer`, but without all those calories
 
 
 
-3. Edit `config/config.yaml` file for your system/experiment. The `mergeBy` parameter uses a list of column names to join as the group id. This parameter minimally requires one column and will generate a group name prefix before all output files. See the example below:
+3. Edit `config/config.yaml` file for your system/experiment. The `groupBy` parameter uses a list of column names to join as the group id. This parameter minimally requires one column and will generate a group name prefix before all output files. See the example below:
 
     ```yaml
     ## Path to sample sheet
     samplesheet: 'samplesheet.txt'
 
     ## List columns to group (i.e. any columns left out will become part of the same group)
-    mergeBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
+    groupBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
 
     ## Genome-specific reference parameters
     fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
@@ -148,14 +148,14 @@ A Hi-C map can be created by running `dietJuicerCore` (see "Quickstart") or by c
     | PROJ    | CELL      | MUT      | 4       | 1        | 2       | sample16_R1.fq.gz | sample16_R2.fq.gz | /path/to/fastq/directory/ | /path/to/merged_nodups.txt.gz | /path/to/inter.txt | /path/to/inter_30.txt | 
 
 
-3. Edit `config/config.yaml` file for your system/experiment. The `mergeBy` parameter uses a list of column names to join as the group id. This parameter minimally requires one column and will generate a group name prefix before all output files. In the example below we combine a mega Hi-C map for `WT` and `MUT` (output group names will be `PROJ_CELL_WT` and `PROJ_CELL_MUT`, respectively):
+3. Edit `config/config.yaml` file for your system/experiment. The `groupBy` parameter uses a list of column names to join as the group id. This parameter minimally requires one column and will generate a group name prefix before all output files. In the example below we combine a mega Hi-C map for `WT` and `MUT` (output group names will be `PROJ_CELL_WT` and `PROJ_CELL_MUT`, respectively):
 
     ```yaml
     ## Path to sample sheet
     samplesheet: 'samplesheet.txt'
 
     ## List columns to group (i.e. any columns left out will become part of the same group)
-    mergeBy: ['Project', 'Cell_Type', 'Genotype']
+    groupBy: ['Project', 'Cell_Type', 'Genotype']
 
     ## Genome-specific reference parameters
     fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 

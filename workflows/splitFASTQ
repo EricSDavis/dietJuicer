@@ -21,7 +21,7 @@ samples['Read1'] = samples[['Sequencing_Directory', 'Read1']].apply(lambda row: 
 samples['Read2'] = samples[['Sequencing_Directory', 'Read2']].apply(lambda row: os.path.join(*row), axis=1)
 
 ## Concatenate columns to identify which groups to run (i.e. Seq_Rep will be run together)
-samples['id'] = samples[config['mergeBy']].agg('_'.join, axis=1)
+samples['id'] = samples[config['groupBy']].agg('_'.join, axis=1)
 
 ## Group by id and extract Read1 & Read2
 read1 = samples.groupby('id')['Read1'].apply(list).to_dict()

@@ -40,7 +40,7 @@ parser.add_argument('-c', '--columnNames',
                     help='A space-separated list of column names from the\
                             samplesheet that define the directory names used for\
                             dietJuicerCore output directories.\
-                            This list can be copied from the "mergeBy"\
+                            This list can be copied from the "groupBy"\
                             parameter in config/config.yaml.\
                             Example: -c "Project" "Cell_Type" "Genotype" "Bio_Rep" "Tech_Rep"')
 

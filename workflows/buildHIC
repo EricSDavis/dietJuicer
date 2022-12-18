@@ -17,7 +17,7 @@ samples = pd.read_table(config["samplesheet"])
 samples = samples.astype(str)
 
 ## Concatenate columns to identify which groups to run (i.e. Seq_Rep will be run together)
-samples['id'] = samples[config['mergeBy']].agg('_'.join, axis=1)
+samples['id'] = samples[config['groupBy']].agg('_'.join, axis=1)
 
 ## Use ID's as groups
 groups = list(set(samples['id']))

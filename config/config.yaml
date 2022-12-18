@@ -2,7 +2,7 @@
 samplesheet: 'samplesheet.txt'
 
 ## List columns to group (i.e. any columns left out will become part of the same group)
-mergeBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
+groupBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
 
 ## Genome-specific reference parameters
 fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
