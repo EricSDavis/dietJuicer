@@ -2,15 +2,15 @@
 samplesheet: 'samplesheet.txt'
 
 ## List columns to group (i.e. any columns left out will become part of the same group)
-groupBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
+groupBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep', 'Seq_Rep']
 
 ## Genome-specific reference parameters
-fasta: '/proj/seq/data/HG19_UCSC/Sequence/BWAIndex/genome.fa' 
-chromSizes: '/proj/phanstiel_lab/References/chromSizes/hg19_chromSizes.txt'
+fasta: '/proj/seq/data/hg38_UCSC/Sequence/BWAIndex/genome.fa' 
+chromSizes: '/proj/phanstiel_lab/References/chromSizes/hg38_chromSizes.txt'
 
 ## Restriction site information
 site: "MboI" # or 'none'
-site_file: 'restriction_sites/hg19_MboI_chr.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
+site_file: 'restriction_sites/hg38_MboI_chr.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
 ligation: "GATCGATC"
 
 ## Set splitsize
