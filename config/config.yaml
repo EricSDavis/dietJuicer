@@ -5,12 +5,12 @@ samplesheet: 'samplesheet.txt'
 groupBy: ['Project', 'Cell_Type', 'Genotype', 'Time', 'Bio_Rep', 'Tech_Rep']
 
 ## Genome-specific reference parameters
-fasta: '/proj/seq/data/hg38_UCSC/Sequence/BWAIndex/genome.fa' 
-chromSizes: '/proj/phanstiel_lab/References/chromSizes/hg38_chromSizes.txt'
+fasta: '/proj/seq/data/T2T-CHM13v2_0_UCSC/hs1.fa' 
+chromSizes: '/proj/seq/data/T2T-CHM13v2_0_UCSC/hs1.chrom.sizes.txt'
 
 ## Restriction site information
 site: "MboI" # or 'none'
-site_file: 'restriction_sites/hg38_MboI.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
+site_file: 'restriction_sites/T2T_MboI.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
 ligation: "GATCGATC"
 
 ## Set splitsize
