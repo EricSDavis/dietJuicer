@@ -10,7 +10,7 @@ chromSizes: '/proj/phanstiel_lab/References/chromSizes/hg38_chromSizes.txt'
 
 ## Restriction site information
 site: "MboI" # or 'none'
-site_file: 'restriction_sites/hg38_MboI_chr.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
+site_file: 'restriction_sites/hg38_MboI.txt' # Make sure chromosomes match bwa index chromosomes (i.e. both start with "chr")
 ligation: "GATCGATC"
 
 ## Set splitsize
